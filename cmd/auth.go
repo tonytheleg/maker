@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"maker/do"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -19,8 +18,12 @@ maker auth --provider [do, aws, azure, gcp]
 Required settings will be prompted based on provider`,
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
-		fmt.Println("auth called with provider", provider)
-		do.CreateDoClient()
+
+		// need a switch but for now just look at DO
+		if provider == "do" {
+			do.Configure()
+			do.CreateDoClient(os.Getenv("DO_PAT_TOKEN"))
+		}
 	},
 }
 
