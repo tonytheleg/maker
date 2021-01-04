@@ -3,7 +3,7 @@ module maker
 go 1.15
 
 require (
-	github.com/digitalocean/godo v1.54.0 // indirect
+	github.com/digitalocean/godo v1.54.0
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1

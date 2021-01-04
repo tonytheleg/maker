@@ -22,7 +22,8 @@ Required settings will be prompted based on provider`,
 		// need a switch but for now just look at DO
 		if provider == "do" {
 			do.Configure()
-			do.CreateDoClient(os.Getenv("DO_PAT_TOKEN"))
+			client := do.CreateDoClient(os.Getenv("DO_PAT_TOKEN"))
+			do.Authenticate(client)
 		}
 	},
 }
