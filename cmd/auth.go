@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"maker/do"
+	"maker/pkg/do"
 	"os"
 
 	"github.com/spf13/cobra"
