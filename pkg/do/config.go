@@ -2,8 +2,10 @@ package do
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -16,64 +18,65 @@ type ConfigFile struct {
 	DefaultRegion string `json:"region"`
 }
 
-/* check if config exists in home dir
-if doesnt, prompt to set config
-if does, ask if want to  reconfig?
-reconfig if yes
-*/
-
 // Configure sets the PAT token and default Region for Digital Ocean
 func Configure() {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
+	configFolder := ".maker"
+	configName := "do_config"
+	configPath := filepath.Join(homeDir, configFolder, configName)
 
-	configFolder := homeDir + "/.maker"
+	// check that .maker exists
 	_, err = os.Stat(configFolder)
-
 	if os.IsNotExist(err) {
 		err := os.Mkdir(configFolder, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	}
-	configFilePath := configFolder + "/do_config"
-	_, err = os.Stat(configFilePath)
 
+	// check if config exists to create, or to verify
+	_, err = os.Stat(configPath)
 	if os.IsNotExist(err) {
 		config := &ConfigFile{}
-		CreateConfigFile(config, configFolder)
+		err = CreateConfigFile(config, configPath)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Config file generated at", configPath)
 	} else {
-		ShowCurrentConfig(configFilePath, configFolder)
+		ShowCurrentConfig(configPath)
 	}
 }
 
 // ShowCurrentConfig prints out the current config file
-func ShowCurrentConfig(configFilePath, configFolder string) {
-	file, err := os.Open(configFilePath)
+func ShowCurrentConfig(configPath string) {
+	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Print(file)
+	fmt.Printf("\nCurrent Config:\n\n%s", string(data))
 
 	var confirmation string
 	fmt.Print("Is this info still accurate? (Y/n): ")
 	fmt.Scanln(&confirmation)
 	confirmation = strings.ToLower(string(confirmation))
 	println()
-	if confirmation != "n" {
+
+	if confirmation != "y" {
 		config := &ConfigFile{}
-		err = CreateConfigFile(config, configFolder)
+		err = CreateConfigFile(config, configPath)
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("Config file generated at", configPath)
 	}
 }
 
 // CreateConfigFile makes the config file to use in all DO commands
-func CreateConfigFile(config *ConfigFile, configFolder string) error {
+func CreateConfigFile(config *ConfigFile, configPath string) error {
 	// ask for PAT token
 	fmt.Println("Please authenticate using your Digital Ocean account...")
 	fmt.Println("Tokens can be generated at https://cloud.digitalocean.com/account/api/tokens")
@@ -92,17 +95,8 @@ func CreateConfigFile(config *ConfigFile, configFolder string) error {
 	config.DefaultRegion = string(region)
 	println()
 
-	fmt.Println(config.PatToken)
-	fmt.Println(config.DefaultRegion)
-	fmt.Println(configFolder)
-
-	_, err = os.Create(configFolder + "/do_config")
-	if err != nil {
-		return err
-	}
-	viper.SetConfigName("do_config")
-	viper.AddConfigPath(configFolder)
-	viper.Set("patToken", config.PatToken)
-	viper.Set("defaultRegion", config.DefaultRegion)
-	return viper.WriteConfig()
+	viper.SetConfigType("yaml")
+	viper.Set("pat_token", config.PatToken)
+	viper.Set("default_region", config.DefaultRegion)
+	return viper.WriteConfigAs(configPath)
 }
