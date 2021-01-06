@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"maker/pkg/do"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -22,8 +21,8 @@ Required settings will be prompted based on provider`,
 		// need a switch but for now just look at DO
 		if provider == "do" {
 			do.Configure()
-			client := do.CreateDoClient(os.Getenv("DO_PAT_TOKEN"))
-			do.Authenticate(client)
+			//client := do.CreateDoClient(os.Getenv("DO_PAT_TOKEN"))
+			//do.Authenticate(client)
 		}
 	},
 }

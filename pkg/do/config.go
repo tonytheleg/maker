@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -16,7 +17,7 @@ type ConfigFile struct {
 }
 
 /* check if config exists in home dir
-if doesnt, prompt to se config
+if doesnt, prompt to set config
 if does, ask if want to  reconfig?
 reconfig if yes
 */
@@ -30,23 +31,27 @@ func Configure() {
 
 	configFolder := homeDir + "/.maker"
 	_, err = os.Stat(configFolder)
+
 	if os.IsNotExist(err) {
 		err := os.Mkdir(configFolder, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 	}
 	configFilePath := configFolder + "/do_config"
 	_, err = os.Stat(configFilePath)
+
 	if os.IsNotExist(err) {
-		CreateConfigFile()
+		config := &ConfigFile{}
+		CreateConfigFile(config, configFolder)
 	} else {
-		ShowCurrentConfig(configFilePath)
+		ShowCurrentConfig(configFilePath, configFolder)
 	}
 }
 
 // ShowCurrentConfig prints out the current config file
-func ShowCurrentConfig(configFilePath string) {
+func ShowCurrentConfig(configFilePath, configFolder string) {
 	file, err := os.Open(configFilePath)
 	if err != nil {
 		panic(err)
@@ -59,12 +64,16 @@ func ShowCurrentConfig(configFilePath string) {
 	confirmation = strings.ToLower(string(confirmation))
 	println()
 	if confirmation != "n" {
-		CreateConfigFile()
+		config := &ConfigFile{}
+		err = CreateConfigFile(config, configFolder)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
 // CreateConfigFile makes the config file to use in all DO commands
-func CreateConfigFile() {
+func CreateConfigFile(config *ConfigFile, configFolder string) error {
 	// ask for PAT token
 	fmt.Println("Please authenticate using your Digital Ocean account...")
 	fmt.Println("Tokens can be generated at https://cloud.digitalocean.com/account/api/tokens")
@@ -73,13 +82,27 @@ func CreateConfigFile() {
 	if err != nil {
 		panic(err)
 	}
-	os.Setenv("DO_PAT_TOKEN", string(pass))
+	config.PatToken = string(pass)
 	println()
 
 	// ask for default region
 	var region string
 	fmt.Print("Default Region: ")
 	fmt.Scanln(&region)
-	os.Setenv("DO_DEFAULT_REGION", string(region))
+	config.DefaultRegion = string(region)
 	println()
+
+	fmt.Println(config.PatToken)
+	fmt.Println(config.DefaultRegion)
+	fmt.Println(configFolder)
+
+	_, err = os.Create(configFolder + "/do_config")
+	if err != nil {
+		return err
+	}
+	viper.SetConfigName("do_config")
+	viper.AddConfigPath(configFolder)
+	viper.Set("patToken", config.PatToken)
+	viper.Set("defaultRegion", config.DefaultRegion)
+	return viper.WriteConfig()
 }
