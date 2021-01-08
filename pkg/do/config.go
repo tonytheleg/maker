@@ -100,3 +100,16 @@ func CreateConfigFile(config *ConfigFile, configPath string) error {
 	viper.Set("default_region", config.DefaultRegion)
 	return viper.WriteConfigAs(configPath)
 }
+
+// LoadConfig parses the viper config file and loads into a struct
+func LoadConfig() (string, string) {
+	// This all needs to be cleaned up using vars but for now...
+	viper.SetConfigName("do_config")
+	viper.AddConfigPath("/home/tony/.maker")
+	viper.SetConfigType("yml")
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Error reading config file, %s", err)
+	}
+
+	return viper.GetString("pat_token"), viper.GetString("default_region")
+}

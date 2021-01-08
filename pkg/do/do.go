@@ -3,13 +3,12 @@ package do
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/digitalocean/godo"
 )
 
 // CreateDoClient creates a new client to interact with Digital Ocean
-func CreateDoClient(patToken string) *godo.Client {
+func CreateDoClient(patToken, defaultRegion string) *godo.Client {
 	client := godo.NewFromToken(patToken)
 	return client
 }
@@ -22,7 +21,7 @@ func Authenticate(client *godo.Client) {
 		panic(err)
 	}
 	fmt.Println("Succesfully Authenticated")
-	fmt.Printf("Account Email: %s\nDefault Region: %s\n", account.Email, os.Getenv("DO_DEFAULT_REGION"))
+	fmt.Printf("Account Email: %s\n", account.Email)
 }
 
 // CreateDoDroplet creates a droplet with provided specs
