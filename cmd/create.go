@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"maker/pkg/do"
 
 	"github.com/spf13/cobra"
@@ -15,24 +14,21 @@ var createCmd = &cobra.Command{
 
 create vm --provider [do, linode, aws, azure, gcp] --size small
 create cluster --provider [do, linode, aws, azure, gcp] --cluster-size small`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 && args[1] != "vm" {
-			return fmt.Errorf("vm required -- need to know object to be created")
-		}
-		return nil
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
 		name, _ := cmd.Flags().GetString("name")
 		size, _ := cmd.Flags().GetString("size")
 		image, _ := cmd.Flags().GetString("image")
+		object, _ := cmd.Flags().GetString("object")
 
-		// need a switch but for now just look at DO
-		if provider == "do" {
-			patToken, defaultRegion := do.LoadConfig()
-			client := do.CreateDoClient(patToken, defaultRegion)
-			do.Authenticate(client)
-			do.CreateDoDroplet(client, name, defaultRegion, size, image)
+		if object == "vm" {
+			// need a switch but for now just look at DO
+			if provider == "do" {
+				patToken, defaultRegion := do.LoadConfig()
+				client := do.CreateDoClient(patToken, defaultRegion)
+				do.Authenticate(client)
+				do.CreateDoDroplet(client, name, defaultRegion, size, image)
+			}
 		}
 	},
 }
@@ -57,6 +53,6 @@ func init() {
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	//createCmd.Flags().StringP("provider", "p", "", "sets the cloud provider")
-	createCmd.Flags().Bool("vm", false, "creates a vm")
-
+	createCmd.Flags().String("object", "", "Object to create: VM, Cluster, Bucket, DB")
+	createCmd.MarkFlagRequired("object")
 }
