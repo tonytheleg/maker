@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 
 	"github.com/spf13/cobra"
@@ -14,10 +16,10 @@ var statusVmCmd = &cobra.Command{
 
 Usage: maker status vm -p PROVIDER -n VM-NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, _ := cmd.Flags().GetString("provider")
 		name, _ := cmd.Flags().GetString("name")
 
-		if provider == "do" {
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
 			patToken, defaultRegion := do.LoadConfig()
 			client := do.CreateDoClient(patToken, defaultRegion)
 			do.Authenticate(client)
@@ -27,6 +29,12 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 				panic(err)
 			}
 			do.PrintDropletStatus(client, dropletId)
+		case "aws":
+			aws.Configure()
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},
 }

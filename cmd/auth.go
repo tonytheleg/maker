@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 
 	"github.com/spf13/cobra"
@@ -16,11 +18,15 @@ authenticate and communicate with a cloud provider
 maker auth --provider [do, aws, azure, gcp]
 Required settings will be prompted based on provider`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, _ := cmd.Flags().GetString("provider")
-
-		// need a switch but for now just look at DO
-		if provider == "do" {
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
 			do.Configure()
+		case "aws":
+			aws.Configure()
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},
 }

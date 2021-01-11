@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 
 	"github.com/spf13/cobra"
@@ -14,16 +16,25 @@ var createVmCmd = &cobra.Command{
 
 Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, _ := cmd.Flags().GetString("provider")
 		name, _ := cmd.Flags().GetString("name")
 		size, _ := cmd.Flags().GetString("size")
 		image, _ := cmd.Flags().GetString("image")
 
-		if provider == "do" {
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
 			patToken, defaultRegion := do.LoadConfig()
 			client := do.CreateDoClient(patToken, defaultRegion)
 			do.Authenticate(client)
 			do.CreateDoDroplet(client, name, defaultRegion, size, image)
+		case "aws":
+			defaultRegion := aws.LoadConfig()
+			fmt.Println(defaultRegion)
+			fmt.Println(aws.HomeDir)
+			fmt.Println(aws.CredsPath)
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},
 }

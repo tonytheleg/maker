@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 
 	"github.com/spf13/cobra"
@@ -15,10 +16,10 @@ var deleteVmCmd = &cobra.Command{
 
 Usage: maker delete vm -p do -n VM-NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, _ := cmd.Flags().GetString("provider")
 		name, _ := cmd.Flags().GetString("name")
 
-		if provider == "do" {
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
 			patToken, defaultRegion := do.LoadConfig()
 			client := do.CreateDoClient(patToken, defaultRegion)
 			do.Authenticate(client)
@@ -33,6 +34,12 @@ Usage: maker delete vm -p do -n VM-NAME`,
 			} else {
 				fmt.Println("Droplet", name, "deleted")
 			}
+		case "aws":
+			aws.Configure()
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},
 }

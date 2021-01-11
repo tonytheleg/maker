@@ -18,42 +18,39 @@ type ConfigFile struct {
 	DefaultRegion string `json:"region"`
 }
 
+var HomeDir, _ = os.UserHomeDir()
+var ConfigFolder = ".maker"
+var ConfigName = "do_config"
+var ConfigPath = filepath.Join(HomeDir, ConfigFolder, ConfigName)
+
 // Configure sets the PAT token and default Region for Digital Ocean
 func Configure() {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-	configFolder := ".maker"
-	configName := "do_config"
-	configPath := filepath.Join(homeDir, configFolder, configName)
-
 	// check that .maker exists
-	_, err = os.Stat(configFolder)
+	_, err := os.Stat(ConfigFolder)
 	if os.IsNotExist(err) {
-		err := os.Mkdir(configFolder, 0755)
+		err := os.Mkdir(ConfigFolder, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	// check if config exists to create, or to verify
-	_, err = os.Stat(configPath)
+	_, err = os.Stat(ConfigPath)
 	if os.IsNotExist(err) {
 		config := &ConfigFile{}
-		err = CreateConfigFile(config, configPath)
+		err = CreateConfigFile(config)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Config file generated at", configPath)
+		fmt.Println("Config file generated at", ConfigPath)
 	} else {
-		ShowCurrentConfig(configPath)
+		ShowCurrentConfig()
 	}
 }
 
 // ShowCurrentConfig prints out the current config file
-func ShowCurrentConfig(configPath string) {
-	data, err := ioutil.ReadFile(configPath)
+func ShowCurrentConfig() {
+	data, err := ioutil.ReadFile(ConfigPath)
 	if err != nil {
 		panic(err)
 	}
@@ -67,16 +64,16 @@ func ShowCurrentConfig(configPath string) {
 
 	if confirmation != "y" {
 		config := &ConfigFile{}
-		err = CreateConfigFile(config, configPath)
+		err = CreateConfigFile(config)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Config file generated at", configPath)
+		fmt.Println("Config file generated at", ConfigPath)
 	}
 }
 
 // CreateConfigFile makes the config file to use in all DO commands
-func CreateConfigFile(config *ConfigFile, configPath string) error {
+func CreateConfigFile(config *ConfigFile) error {
 	// ask for PAT token
 	fmt.Println("Please authenticate using your Digital Ocean account...")
 	fmt.Println("Tokens can be generated at https://cloud.digitalocean.com/account/api/tokens")
@@ -98,14 +95,13 @@ func CreateConfigFile(config *ConfigFile, configPath string) error {
 	viper.SetConfigType("yaml")
 	viper.Set("pat_token", config.PatToken)
 	viper.Set("default_region", config.DefaultRegion)
-	return viper.WriteConfigAs(configPath)
+	return viper.WriteConfigAs(ConfigPath)
 }
 
 // LoadConfig parses the viper config file and loads into a struct
 func LoadConfig() (string, string) {
 	// This all needs to be cleaned up using vars but for now...
-	viper.SetConfigName("do_config")
-	viper.AddConfigPath("/home/tony/.maker")
+	viper.SetConfigFile(ConfigPath)
 	viper.SetConfigType("yml")
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Error reading config file, %s", err)
