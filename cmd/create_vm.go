@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createVmCmd represents the createVm command
+// createVmCmd represents the create vm command
 var createVmCmd = &cobra.Command{
 	Use:   "vm",
 	Short: "creates a VM",
@@ -32,8 +32,8 @@ func init() {
 	rootCmd.AddCommand(createVmCmd)
 
 	// Local flags which will only run when this command
-	createVmCmd.PersistentFlags().StringP("name", "n", "", "name of the object")
-	createVmCmd.MarkPersistentFlagRequired("name")
+	createVmCmd.Flags().StringP("name", "n", "", "name of the object")
+	createVmCmd.MarkFlagRequired("name")
 	createVmCmd.Flags().StringP("size", "s", "", "sets the size of the object")
 	createVmCmd.MarkFlagRequired("size")
 	createVmCmd.Flags().StringP("image", "i", "", "sets the image slug")
