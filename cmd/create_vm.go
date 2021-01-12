@@ -28,12 +28,9 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 			do.CreateDoDroplet(client, name, defaultRegion, size, image)
 		case "aws":
 			defaultRegion := aws.LoadConfig()
-			fmt.Println(defaultRegion)
-			fmt.Println(aws.HomeDir)
-			fmt.Println(aws.CredsPath)
+			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			aws.CreateEc2Instance(session, name, defaultRegion, image, size)
 		default:
-			// freebsd, openbsd,
-			// plan9, windows...
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},

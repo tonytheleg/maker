@@ -30,7 +30,9 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 			}
 			do.PrintDropletStatus(client, dropletId)
 		case "aws":
-			aws.Configure()
+			defaultRegion := aws.LoadConfig()
+			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			aws.PrintEc2Status(session, name)
 		default:
 			// freebsd, openbsd,
 			// plan9, windows...
