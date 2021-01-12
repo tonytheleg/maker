@@ -35,10 +35,11 @@ Usage: maker delete vm -p do -n VM-NAME`,
 				fmt.Println("Droplet", name, "deleted")
 			}
 		case "aws":
-			aws.Configure()
+			defaultRegion := aws.LoadConfig()
+			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			instanceId := aws.GetInstanceId(session, name)
+			aws.DeleteEc2Instance(session, instanceId)
 		default:
-			// freebsd, openbsd,
-			// plan9, windows...
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},
