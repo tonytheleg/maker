@@ -55,7 +55,7 @@ func GetDoDroplet(client *godo.Client, name string) (int, error) {
 
 	droplets, _, err := client.Droplets.List(ctx, opt)
 	if err != nil {
-		return -1, errors.Wrapf(err, "Could not list droplets to search for %s", name)
+		return 1, errors.Wrapf(err, "Could not list droplets to search for %s", name)
 	}
 	for index := range droplets {
 		if droplets[index].Name == name {
@@ -65,7 +65,7 @@ func GetDoDroplet(client *godo.Client, name string) (int, error) {
 	if dropletID != 0 {
 		return dropletID, nil
 	}
-	return -1, errors.Wrapf(err, "Could not find droplet with name %s", name)
+	return 1, errors.Wrapf(err, "Could not find droplet with name %s", name)
 
 }
 

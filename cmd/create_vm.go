@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
-	"os"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -24,21 +24,14 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
 			patToken, defaultRegion, err := do.LoadConfig()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			utils.HandleErr("Failed to load config", err)
+
 			client := do.CreateDoClient(patToken, defaultRegion)
 			err = do.Authenticate(client)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			utils.HandleErr("Failed to authenticate", err)
+
 			err = do.CreateDoDroplet(client, name, defaultRegion, size, image)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			utils.HandleErr("Failed to create droplet", err)
 		case "aws":
 			defaultRegion := aws.LoadConfig()
 			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
