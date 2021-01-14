@@ -24,8 +24,6 @@ Required settings will be prompted based on provider`,
 		case "aws":
 			aws.Configure()
 		default:
-			// freebsd, openbsd,
-			// plan9, windows...
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
 	},

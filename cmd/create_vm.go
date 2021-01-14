@@ -9,7 +9,7 @@ import (
 )
 
 // createVmCmd represents the create vm command
-var createVmCmd = &cobra.Command{
+var createVMCmd = &cobra.Command{
 	Use:   "vm",
 	Short: "creates a VM",
 	Long: `Used to create a VM object on the specified provider:
@@ -37,13 +37,13 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 }
 
 func init() {
-	rootCmd.AddCommand(createVmCmd)
+	rootCmd.AddCommand(createVMCmd)
 
 	// Local flags which will only run when this command
-	createVmCmd.Flags().StringP("name", "n", "", "name of the object")
-	createVmCmd.MarkFlagRequired("name")
-	createVmCmd.Flags().StringP("size", "s", "", "sets the size of the object")
-	createVmCmd.MarkFlagRequired("size")
-	createVmCmd.Flags().StringP("image", "i", "", "sets the image slug")
-	createVmCmd.MarkFlagRequired("image")
+	createVMCmd.Flags().StringP("name", "n", "", "name of the object")
+	createVMCmd.MarkFlagRequired("name")
+	createVMCmd.Flags().StringP("size", "s", "", "sets the size of the object")
+	createVMCmd.MarkFlagRequired("size")
+	createVMCmd.Flags().StringP("image", "i", "", "sets the image slug")
+	createVMCmd.MarkFlagRequired("image")
 }

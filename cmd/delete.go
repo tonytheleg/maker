@@ -17,5 +17,5 @@ Example: maker delete vm [flags]`,
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 	// adds the "vm" subcommand (maker delete vm)
-	deleteCmd.AddCommand(deleteVmCmd)
+	deleteCmd.AddCommand(deleteVMCmd)
 }

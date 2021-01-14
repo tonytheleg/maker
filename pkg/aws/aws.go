@@ -17,7 +17,7 @@ func CreateAwsSession(defaultRegion, credentialsFile string) *session.Session {
 		Credentials: credentials.NewSharedCredentials(credentialsFile, "default")},
 	)
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to create session -- ", err)
 	}
 	return sess
 
@@ -60,7 +60,8 @@ func CreateEc2Instance(sess *session.Session, name string, region string, ami st
 	fmt.Println("Successfully tagged instance")
 }
 
-func GetInstanceId(sess *session.Session, name string) string {
+// GetInstanceID fetches the EC2 Instance ID for status or deleting
+func GetInstanceID(sess *session.Session, name string) string {
 	svc := ec2.New(sess)
 	input := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{

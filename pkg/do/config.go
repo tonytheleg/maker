@@ -3,7 +3,6 @@ package do
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,9 +17,16 @@ type ConfigFile struct {
 	DefaultRegion string `json:"region"`
 }
 
+// HomeDir stores the path of the current users Home directory
 var HomeDir, _ = os.UserHomeDir()
+
+// ConfigFolder is the name of Makers config folder stored in Home
 var ConfigFolder = ".maker"
+
+// ConfigName is the name of the config file used by Maker
 var ConfigName = "do_config"
+
+// ConfigPath is the full path to the ConfigFile
 var ConfigPath = filepath.Join(HomeDir, ConfigFolder, ConfigName)
 
 // Configure sets the PAT token and default Region for Digital Ocean
@@ -30,7 +36,7 @@ func Configure() {
 	if os.IsNotExist(err) {
 		err := os.Mkdir(ConfigFolder, 0755)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Failed to create config directory %s -- %s\n", ConfigFolder, err)
 		}
 	}
 
@@ -40,7 +46,7 @@ func Configure() {
 		config := &ConfigFile{}
 		err = CreateConfigFile(config)
 		if err != nil {
-			panic(err)
+			fmt.Printf("Failed to create config file %s -- %s\n", ConfigName, err)
 		}
 		fmt.Println("Config file generated at", ConfigPath)
 	} else {
@@ -52,7 +58,7 @@ func Configure() {
 func ShowCurrentConfig() {
 	data, err := ioutil.ReadFile(ConfigPath)
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to read file -- ", err)
 	}
 	fmt.Printf("\nCurrent Config:\n\n%s", string(data))
 
@@ -66,7 +72,7 @@ func ShowCurrentConfig() {
 		config := &ConfigFile{}
 		err = CreateConfigFile(config)
 		if err != nil {
-			panic(err)
+			fmt.Printf("Failed to create config file %s -- %s\n", ConfigName, err)
 		}
 		fmt.Println("Config file generated at", ConfigPath)
 	}
@@ -80,7 +86,7 @@ func CreateConfigFile(config *ConfigFile) error {
 	fmt.Print("Enter PAT Token: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to capture password -- ", err)
 	}
 	config.PatToken = string(pass)
 	println()

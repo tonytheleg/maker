@@ -3,7 +3,6 @@ package aws
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,14 +13,21 @@ import (
 
 // CredsFile makes up the required settings in a AWS config file
 type CredsFile struct {
-	AccessKeyId     string
+	AccessKeyID     string
 	SecretAccessKey string
 	DefaultRegion   string
 }
 
+// HomeDir stores the path of the current users Home directory
 var HomeDir, _ = os.UserHomeDir()
+
+// CredsFolder is the name of Makers config folder stored in Home
 var CredsFolder = ".maker"
+
+// CredsName is the name of the config file used by Maker
 var CredsName = "aws_credentials"
+
+// CredsPath is the full path to the ConfigFile
 var CredsPath = filepath.Join(HomeDir, CredsFolder, CredsName)
 
 // Configure sets the PAT token and default Region for Digital Ocean
@@ -31,7 +37,7 @@ func Configure() {
 	if os.IsNotExist(err) {
 		err := os.Mkdir(CredsFolder, 0755)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Failed to create creds directory %s -- %s\n", CredsFolder, err)
 		}
 	}
 
@@ -41,7 +47,7 @@ func Configure() {
 		creds := &CredsFile{}
 		err = CreateCredsFile(creds)
 		if err != nil {
-			panic(err)
+			fmt.Printf("Failed to create creds file %s -- %s\n", CredsName, err)
 		}
 		fmt.Println("Creds file generated at", CredsPath)
 	} else {
@@ -53,7 +59,7 @@ func Configure() {
 func ShowCurrentCreds() {
 	data, err := ioutil.ReadFile(CredsPath)
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to read file -- ", err)
 	}
 	fmt.Printf("\nCurrent Credentials:\n\n%s", string(data))
 
@@ -67,24 +73,24 @@ func ShowCurrentCreds() {
 		creds := &CredsFile{}
 		err = CreateCredsFile(creds)
 		if err != nil {
-			panic(err)
+			fmt.Printf("Failed to create creds file %s -- %s\n", CredsName, err)
 		}
 		fmt.Println("Credentials file generated at", CredsPath)
 	}
 }
 
-// CreateConfigFile makes the config file to use in all DO commands
+// CreateCredsFile makes the config file to use in all DO commands
 func CreateCredsFile(creds *CredsFile) error {
 	// ask for access key
 	var accessKey string
 	fmt.Print("Enter AWS Access Key ID: ")
 	fmt.Scanln(&accessKey)
-	creds.AccessKeyId = string(accessKey)
+	creds.AccessKeyID = string(accessKey)
 
 	fmt.Print("Enter AWS Secret Key ID: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to capture password -- ", err)
 	}
 	creds.SecretAccessKey = string(pass)
 	println()
@@ -95,7 +101,7 @@ func CreateCredsFile(creds *CredsFile) error {
 	creds.DefaultRegion = string(region)
 
 	viper.SetConfigType("toml")
-	viper.Set("default.aws_access_key_id", creds.AccessKeyId)
+	viper.Set("default.aws_access_key_id", creds.AccessKeyID)
 	viper.Set("default.aws_secret_access_key", creds.SecretAccessKey)
 	viper.Set("region.default_region", creds.DefaultRegion)
 	return viper.WriteConfigAs(CredsPath)
