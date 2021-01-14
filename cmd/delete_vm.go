@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -20,11 +21,27 @@ Usage: maker delete vm -p do -n VM-NAME`,
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			patToken, defaultRegion := do.LoadConfig()
+			patToken, defaultRegion, err := do.LoadConfig()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 			client := do.CreateDoClient(patToken, defaultRegion)
-			do.Authenticate(client)
-			dropletID := do.GetDoDroplet(client, name)
-			do.DeleteDoDroplet(client, dropletID, name)
+			err = do.Authenticate(client)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			dropletID, err := do.GetDoDroplet(client, name)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			err = do.DeleteDoDroplet(client, dropletID, name)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 
 		case "aws":
 			defaultRegion := aws.LoadConfig()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +21,11 @@ Required settings will be prompted based on provider`,
 	Run: func(cmd *cobra.Command, args []string) {
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			do.Configure()
+			err := do.Configure()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		case "aws":
 			aws.Configure()
 		default:

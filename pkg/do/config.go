@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -30,13 +31,13 @@ var ConfigName = "do_config"
 var ConfigPath = filepath.Join(HomeDir, ConfigFolder, ConfigName)
 
 // Configure sets the PAT token and default Region for Digital Ocean
-func Configure() {
+func Configure() error {
 	// check that .maker exists
 	_, err := os.Stat(ConfigFolder)
 	if os.IsNotExist(err) {
 		err := os.Mkdir(ConfigFolder, 0755)
 		if err != nil {
-			fmt.Printf("Failed to create config directory %s -- %s\n", ConfigFolder, err)
+			return errors.Wrapf(err, "Failed to create config directory %s", ConfigFolder)
 		}
 	}
 
@@ -46,19 +47,19 @@ func Configure() {
 		config := &ConfigFile{}
 		err = CreateConfigFile(config)
 		if err != nil {
-			fmt.Printf("Failed to create config file %s -- %s\n", ConfigName, err)
+			return errors.Wrapf(err, "Failed to create config file %s", ConfigName)
 		}
-		fmt.Println("Config file generated at", ConfigPath)
-	} else {
-		ShowCurrentConfig()
 	}
+	fmt.Println("Config file generated at", ConfigPath)
+	ShowCurrentConfig()
+	return nil
 }
 
 // ShowCurrentConfig prints out the current config file
-func ShowCurrentConfig() {
+func ShowCurrentConfig() error {
 	data, err := ioutil.ReadFile(ConfigPath)
 	if err != nil {
-		fmt.Println("Failed to read file -- ", err)
+		return errors.Wrapf(err, "Failed to read file %s", ConfigPath)
 	}
 	fmt.Printf("\nCurrent Config:\n\n%s", string(data))
 
@@ -72,10 +73,11 @@ func ShowCurrentConfig() {
 		config := &ConfigFile{}
 		err = CreateConfigFile(config)
 		if err != nil {
-			fmt.Printf("Failed to create config file %s -- %s\n", ConfigName, err)
+			return errors.Wrapf(err, "Failed to create config file %s", ConfigName)
 		}
 		fmt.Println("Config file generated at", ConfigPath)
 	}
+	return nil
 }
 
 // CreateConfigFile makes the config file to use in all DO commands
@@ -86,7 +88,7 @@ func CreateConfigFile(config *ConfigFile) error {
 	fmt.Print("Enter PAT Token: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Println("Failed to capture password -- ", err)
+		return errors.Errorf("Failed to capture password", err)
 	}
 	config.PatToken = string(pass)
 	println()
@@ -105,13 +107,14 @@ func CreateConfigFile(config *ConfigFile) error {
 }
 
 // LoadConfig parses the viper config file and loads into a struct
-func LoadConfig() (string, string) {
+func LoadConfig() (string, string, error) {
 	// This all needs to be cleaned up using vars but for now...
 	viper.SetConfigFile(ConfigPath)
 	viper.SetConfigType("yml")
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
+	err := viper.ReadInConfig()
+	if err != nil {
+		return "", "", errors.Errorf("Error reading config file %s", ConfigPath, err)
 	}
 
-	return viper.GetString("pat_token"), viper.GetString("default_region")
+	return viper.GetString("pat_token"), viper.GetString("default_region"), nil
 }

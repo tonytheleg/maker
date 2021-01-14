@@ -3,9 +3,9 @@ package do
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/digitalocean/godo"
+	"github.com/pkg/errors"
 )
 
 // CreateDoClient creates a new client to interact with Digital Ocean
@@ -15,16 +15,17 @@ func CreateDoClient(patToken, defaultRegion string) *godo.Client {
 }
 
 // Authenticate gets account info and prints it
-func Authenticate(client *godo.Client) {
+func Authenticate(client *godo.Client) error {
 	ctx := context.TODO()
 	_, _, err := client.Account.Get(ctx)
 	if err != nil {
-		fmt.Println("Failed to create context -- ", err)
+		return errors.Errorf("Failed to create context -- ", err)
 	}
+	return nil
 }
 
 // CreateDoDroplet creates a droplet with provided specs
-func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug string, imageSlug string) {
+func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug string, imageSlug string) error {
 	ctx := context.TODO()
 	createRequest := &godo.DropletCreateRequest{
 		Name:   name,
@@ -37,13 +38,14 @@ func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug s
 
 	droplet, _, err := client.Droplets.Create(ctx, createRequest)
 	if err != nil {
-		fmt.Println("Failed to create droplet -- ", err)
+		return errors.Errorf("Failed to create droplet -- ", err)
 	}
 	fmt.Println(droplet.Name, "created")
+	return nil
 }
 
 // GetDoDroplet grabs the droplet ID with the provided name
-func GetDoDroplet(client *godo.Client, name string) int {
+func GetDoDroplet(client *godo.Client, name string) (int, error) {
 	var dropletID int
 	ctx := context.TODO()
 	opt := &godo.ListOptions{
@@ -53,8 +55,7 @@ func GetDoDroplet(client *godo.Client, name string) int {
 
 	droplets, _, err := client.Droplets.List(ctx, opt)
 	if err != nil {
-		fmt.Println("Failed to fetch droplet id -- ", err)
-		os.Exit(1)
+		return -1, errors.Wrapf(err, "Could not list droplets to search for %s", name)
 	}
 	for index := range droplets {
 		if droplets[index].Name == name {
@@ -62,11 +63,10 @@ func GetDoDroplet(client *godo.Client, name string) int {
 		}
 	}
 	if dropletID != 0 {
-		return dropletID
+		return dropletID, nil
 	}
-	fmt.Println("Could not find droplet with that ID")
-	os.Exit(1)
-	return 0
+	return -1, errors.Wrapf(err, "Could not find droplet with name %s", name)
+
 }
 
 // PrintDropletStatus outputs some droplet info
@@ -91,13 +91,12 @@ func PrintDropletStatus(client *godo.Client, id int) {
 }
 
 // DeleteDoDroplet delets a droplet with the provided ID
-func DeleteDoDroplet(client *godo.Client, id int, name string) {
+func DeleteDoDroplet(client *godo.Client, id int, name string) error {
 	ctx := context.TODO()
 	_, err := client.Droplets.Delete(ctx, id)
 	if err != nil {
-		fmt.Println("Deleting droplet failed -- ", err)
-		os.Exit(1)
-	} else {
-		fmt.Println("Droplet", name, "deleted")
+		return errors.Errorf("Deleting droplet failed -- ", err)
 	}
+	fmt.Println("Droplet", name, "deleted")
+	return nil
 }
