@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -31,13 +32,13 @@ var CredsName = "aws_credentials"
 var CredsPath = filepath.Join(HomeDir, CredsFolder, CredsName)
 
 // Configure sets the PAT token and default Region for Digital Ocean
-func Configure() {
+func Configure() error {
 	// check that .maker exists
 	_, err := os.Stat(CredsFolder)
 	if os.IsNotExist(err) {
 		err := os.Mkdir(CredsFolder, 0755)
 		if err != nil {
-			fmt.Printf("Failed to create creds directory %s -- %s\n", CredsFolder, err)
+			return errors.Wrapf(err, "Failed to creds folder %s", CredsFolder)
 		}
 	}
 
@@ -47,19 +48,19 @@ func Configure() {
 		creds := &CredsFile{}
 		err = CreateCredsFile(creds)
 		if err != nil {
-			fmt.Printf("Failed to create creds file %s -- %s\n", CredsName, err)
+			return errors.Wrapf(err, "Failed to create creds file %s", CredsName)
 		}
-		fmt.Println("Creds file generated at", CredsPath)
-	} else {
-		ShowCurrentCreds()
 	}
+	fmt.Println("Creds file generated at", CredsPath)
+	ShowCurrentCreds()
+	return nil
 }
 
 // ShowCurrentCreds prints out the current config file
-func ShowCurrentCreds() {
+func ShowCurrentCreds() error {
 	data, err := ioutil.ReadFile(CredsPath)
 	if err != nil {
-		fmt.Println("Failed to read file -- ", err)
+		return errors.Wrapf(err, "Failed to read file %s", CredsPath)
 	}
 	fmt.Printf("\nCurrent Credentials:\n\n%s", string(data))
 
@@ -73,10 +74,11 @@ func ShowCurrentCreds() {
 		creds := &CredsFile{}
 		err = CreateCredsFile(creds)
 		if err != nil {
-			fmt.Printf("Failed to create creds file %s -- %s\n", CredsName, err)
+			return errors.Wrapf(err, "Failed to create creds file %s", CredsName)
 		}
 		fmt.Println("Credentials file generated at", CredsPath)
 	}
+	return nil
 }
 
 // CreateCredsFile makes the config file to use in all DO commands
@@ -90,7 +92,7 @@ func CreateCredsFile(creds *CredsFile) error {
 	fmt.Print("Enter AWS Secret Key ID: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Println("Failed to capture password -- ", err)
+		return errors.Errorf("Failed to capture password", err)
 	}
 	creds.SecretAccessKey = string(pass)
 	println()
@@ -108,13 +110,13 @@ func CreateCredsFile(creds *CredsFile) error {
 }
 
 // LoadConfig parses the viper config file and loads into a struct
-func LoadConfig() string {
+func LoadConfig() (string, error) {
 	// This all needs to be cleaned up using vars but for now...
 	viper.SetConfigFile(CredsPath)
 	viper.SetConfigType("toml")
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
+		return "", errors.Errorf("Error reading creds file %s", CredsPath, err)
 	}
 
-	return viper.GetString("region.default_region")
+	return viper.GetString("region.default_region"), nil
 }

@@ -8,26 +8,27 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/pkg/errors"
 )
 
 // CreateAwsSession sets up a new session using the config file
-func CreateAwsSession(defaultRegion, credentialsFile string) *session.Session {
+func CreateAwsSession(defaultRegion, credentialsFile string) (*session.Session, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(defaultRegion),
 		Credentials: credentials.NewSharedCredentials(credentialsFile, "default")},
 	)
 	if err != nil {
-		fmt.Println("Failed to create session -- ", err)
+		return nil, errors.Errorf("Failed to create session", err)
 	}
-	return sess
-
+	return sess, nil
 }
 
 // CreateEc2Instance creates an ec2 instance with provided specs
-func CreateEc2Instance(sess *session.Session, name string, region string, ami string, instanceType string) {
-	// Create EC2 service client
-	svc := ec2.New(sess)
+func CreateEc2Instance(
+	sess *session.Session, name string, region string, ami string, instanceType string) error {
 
+	// Create the instance
+	svc := ec2.New(sess)
 	result, err := svc.RunInstances(&ec2.RunInstancesInput{
 		ImageId:      aws.String(ami),
 		InstanceType: aws.String(instanceType),
@@ -36,10 +37,8 @@ func CreateEc2Instance(sess *session.Session, name string, region string, ami st
 	})
 
 	if err != nil {
-		fmt.Println("Could not create instance", err)
-		return
+		return errors.Wrapf(err, "Failed to create EC2 instance %s", name)
 	}
-
 	fmt.Println("Created instance", *result.Instances[0].InstanceId)
 
 	// Add tags to the created instance
@@ -53,15 +52,15 @@ func CreateEc2Instance(sess *session.Session, name string, region string, ami st
 		},
 	})
 	if err != nil {
-		fmt.Println("Could not create tags for instance", result.Instances[0].InstanceId, err)
-		return
+		return errors.Wrapf(err, "Failed to tag instance %s with name %s",
+			*result.Instances[0].InstanceId, name)
 	}
-
 	fmt.Println("Successfully tagged instance")
+	return nil
 }
 
 // GetInstanceID fetches the EC2 Instance ID for status or deleting
-func GetInstanceID(sess *session.Session, name string) string {
+func GetInstanceID(sess *session.Session, name string) (string, error) {
 	svc := ec2.New(sess)
 	input := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
@@ -79,12 +78,15 @@ func GetInstanceID(sess *session.Session, name string) string {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				fmt.Println(aerr.Error())
+				return "", errors.Wrapf(
+					errors.New(aerr.Error()), "Failed to describe instance %s", name)
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
-			fmt.Println(err.Error())
+			return "", errors.Wrapf(
+				errors.New(err.Error()), "Failed to describe instance %s", name)
+
 		}
 		return ""
 	}
