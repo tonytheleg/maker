@@ -33,8 +33,12 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 
 			do.PrintDropletStatus(client, dropletID)
 		case "aws":
-			defaultRegion := aws.LoadConfig()
-			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config", err)
+
+			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			utils.HandleErr("Failed to setup AWS Session", err)
+
 			aws.PrintEc2Status(session, name)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)

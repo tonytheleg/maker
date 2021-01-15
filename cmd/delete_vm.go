@@ -35,10 +35,17 @@ Usage: maker delete vm -p do -n VM-NAME`,
 			utils.HandleErr("Failed to delete droplet", err)
 
 		case "aws":
-			defaultRegion := aws.LoadConfig()
-			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
-			instanceID := aws.GetInstanceID(session, name)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config", err)
+
+			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			utils.HandleErr("Failed to setup AWS Session", err)
+
+			instanceID, err := aws.GetInstanceID(session, name)
+			utils.HandleErr("Failed to fetch EC2 instance ID", err)
+
 			aws.DeleteEc2Instance(session, instanceID)
+			utils.HandleErr("Failed to delete EC2 instance ID", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

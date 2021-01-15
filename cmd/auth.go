@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
-	"os"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -22,12 +22,10 @@ Required settings will be prompted based on provider`,
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
 			err := do.Configure()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			utils.HandleErr("Failed to setup configuration files", err)
 		case "aws":
-			aws.Configure()
+			err := aws.Configure()
+			utils.HandleErr("Failed to setup configuration files", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

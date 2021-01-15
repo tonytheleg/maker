@@ -33,9 +33,14 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 			err = do.CreateDoDroplet(client, name, defaultRegion, size, image)
 			utils.HandleErr("Failed to create droplet", err)
 		case "aws":
-			defaultRegion := aws.LoadConfig()
-			session := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config", err)
+
+			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			utils.HandleErr("Failed to setup AWS Session", err)
+
 			aws.CreateEc2Instance(session, name, defaultRegion, image, size)
+			utils.HandleErr("Failed to create EC2 instance", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
