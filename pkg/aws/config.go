@@ -35,10 +35,10 @@ var CredsPath = filepath.Join(HomeDir, CredsFolder, CredsName)
 func Configure() error {
 	// check that .maker exists
 	_, err := os.Stat(CredsFolder)
-	if os.IsNotExist(err) {
-		err := os.Mkdir(CredsFolder, 0755)
+	if os.IsExist(err) {
+		err := os.Mkdir(filepath.Join(HomeDir, CredsFolder), 0755)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to creds folder %s", CredsFolder)
+			return errors.Wrapf(err, "Failed to creds folder %s:", CredsFolder)
 		}
 	}
 
@@ -48,7 +48,7 @@ func Configure() error {
 		creds := &CredsFile{}
 		err = CreateCredsFile(creds)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to create creds file %s", CredsName)
+			return errors.Wrapf(err, "Failed to create creds file %s:", CredsName)
 		}
 	}
 	fmt.Println("Creds file generated at", CredsPath)
@@ -60,12 +60,12 @@ func Configure() error {
 func ShowCurrentCreds() error {
 	data, err := ioutil.ReadFile(CredsPath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read file %s", CredsPath)
+		return errors.Wrapf(err, "Failed to read file %s:", CredsPath)
 	}
 	fmt.Printf("\nCurrent Credentials:\n\n%s", string(data))
 
 	var confirmation string
-	fmt.Print("Is this info still accurate? (Y/n): ")
+	fmt.Print("Is this info accurate? (Y/n): ")
 	fmt.Scanln(&confirmation)
 	confirmation = strings.ToLower(string(confirmation))
 	println()
@@ -74,7 +74,7 @@ func ShowCurrentCreds() error {
 		creds := &CredsFile{}
 		err = CreateCredsFile(creds)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to create creds file %s", CredsName)
+			return errors.Wrapf(err, "Failed to create creds file %s:", CredsName)
 		}
 		fmt.Println("Credentials file generated at", CredsPath)
 	}
@@ -92,7 +92,7 @@ func CreateCredsFile(creds *CredsFile) error {
 	fmt.Print("Enter AWS Secret Key ID: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		return errors.Errorf("Failed to capture password", err)
+		return errors.Errorf("Failed to capture password:", err)
 	}
 	creds.SecretAccessKey = string(pass)
 	println()
@@ -115,7 +115,7 @@ func LoadConfig() (string, error) {
 	viper.SetConfigFile(CredsPath)
 	viper.SetConfigType("toml")
 	if err := viper.ReadInConfig(); err != nil {
-		return "", errors.Errorf("Error reading creds file %s", CredsPath, err)
+		return "", errors.Errorf("Error reading creds file %s:", CredsPath, err)
 	}
 
 	return viper.GetString("region.default_region"), nil

@@ -34,10 +34,10 @@ var ConfigPath = filepath.Join(HomeDir, ConfigFolder, ConfigName)
 func Configure() error {
 	// check that .maker exists
 	_, err := os.Stat(ConfigFolder)
-	if os.IsNotExist(err) {
-		err := os.Mkdir(ConfigFolder, 0755)
+	if os.IsExist(err) {
+		err := os.Mkdir(filepath.Join(HomeDir, ConfigFolder), 0755)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to create config directory %s", ConfigFolder)
+			return errors.Wrapf(err, "Failed to create config directory %s:", ConfigFolder)
 		}
 	}
 
@@ -47,7 +47,7 @@ func Configure() error {
 		config := &ConfigFile{}
 		err = CreateConfigFile(config)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to create config file %s", ConfigName)
+			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
 	}
 	fmt.Println("Config file generated at", ConfigPath)
@@ -59,12 +59,12 @@ func Configure() error {
 func ShowCurrentConfig() error {
 	data, err := ioutil.ReadFile(ConfigPath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read file %s", ConfigPath)
+		return errors.Wrapf(err, "Failed to read file %s:", ConfigPath)
 	}
 	fmt.Printf("\nCurrent Config:\n\n%s", string(data))
 
 	var confirmation string
-	fmt.Print("Is this info still accurate? (Y/n): ")
+	fmt.Printf("\nIs this info accurate? (Y/n): ")
 	fmt.Scanln(&confirmation)
 	confirmation = strings.ToLower(string(confirmation))
 	println()
@@ -73,7 +73,7 @@ func ShowCurrentConfig() error {
 		config := &ConfigFile{}
 		err = CreateConfigFile(config)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to create config file %s", ConfigName)
+			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
 		fmt.Println("Config file generated at", ConfigPath)
 	}
@@ -88,7 +88,7 @@ func CreateConfigFile(config *ConfigFile) error {
 	fmt.Print("Enter PAT Token: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		return errors.Errorf("Failed to capture password", err)
+		return errors.Errorf("Failed to capture password:", err)
 	}
 	config.PatToken = string(pass)
 	println()
@@ -113,7 +113,7 @@ func LoadConfig() (string, string, error) {
 	viper.SetConfigType("yml")
 	err := viper.ReadInConfig()
 	if err != nil {
-		return "", "", errors.Errorf("Error reading config file %s", ConfigPath, err)
+		return "", "", errors.Errorf("Error reading config file %s:", ConfigPath, err)
 	}
 
 	return viper.GetString("pat_token"), viper.GetString("default_region"), nil

@@ -19,7 +19,7 @@ func Authenticate(client *godo.Client) error {
 	ctx := context.TODO()
 	_, _, err := client.Account.Get(ctx)
 	if err != nil {
-		return errors.Errorf("Failed to create context -- ", err)
+		return errors.Errorf("Failed to create context:", err)
 	}
 	return nil
 }
@@ -38,7 +38,7 @@ func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug s
 
 	droplet, _, err := client.Droplets.Create(ctx, createRequest)
 	if err != nil {
-		return errors.Errorf("Failed to create droplet -- ", err)
+		return errors.Errorf("Failed to create droplet:", err)
 	}
 	fmt.Println(droplet.Name, "created")
 	return nil
@@ -55,7 +55,7 @@ func GetDoDroplet(client *godo.Client, name string) (int, error) {
 
 	droplets, _, err := client.Droplets.List(ctx, opt)
 	if err != nil {
-		return 1, errors.Wrapf(err, "Could not list droplets to search for %s", name)
+		return 1, errors.Wrapf(err, "Could not list droplets to search for %s:", name)
 	}
 	for index := range droplets {
 		if droplets[index].Name == name {
@@ -65,7 +65,7 @@ func GetDoDroplet(client *godo.Client, name string) (int, error) {
 	if dropletID != 0 {
 		return dropletID, nil
 	}
-	return 1, errors.Wrapf(err, "Could not find droplet with name %s", name)
+	return 1, errors.Wrapf(err, "Could not find droplet with name %s:", name)
 
 }
 
@@ -74,7 +74,7 @@ func PrintDropletStatus(client *godo.Client, id int) {
 	ctx := context.TODO()
 	droplet, _, err := client.Droplets.Get(ctx, id)
 	if err != nil {
-		fmt.Println("Could not fetch droplet status -- ", err)
+		fmt.Println("Could not fetch droplet status:", err)
 	}
 	fmt.Printf(
 		"Name: %s\nUID: %d\nMemory: %d\nDisk: %d\n\nDistribution: %s\nVersion: %s\n\nPublic IP: %s\nRegion: %s\nStatus: %s\n",
@@ -95,7 +95,7 @@ func DeleteDoDroplet(client *godo.Client, id int, name string) error {
 	ctx := context.TODO()
 	_, err := client.Droplets.Delete(ctx, id)
 	if err != nil {
-		return errors.Errorf("Deleting droplet failed -- ", err)
+		return errors.Errorf("Deleting droplet failed:", err)
 	}
 	fmt.Println("Droplet", name, "deleted")
 	return nil

@@ -22,30 +22,30 @@ Usage: maker delete vm -p do -n VM-NAME`,
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
 			patToken, defaultRegion, err := do.LoadConfig()
-			utils.HandleErr("Failed to load config", err)
+			utils.HandleErr("Failed to load config:", err)
 
 			client := do.CreateDoClient(patToken, defaultRegion)
 			err = do.Authenticate(client)
-			utils.HandleErr("Failed to authenticate", err)
+			utils.HandleErr("Failed to authenticate:", err)
 
 			dropletID, err := do.GetDoDroplet(client, name)
-			utils.HandleErr("Faiiled to fetch droplet ID", err)
+			utils.HandleErr("Faiiled to fetch droplet ID:", err)
 
 			err = do.DeleteDoDroplet(client, dropletID, name)
-			utils.HandleErr("Failed to delete droplet", err)
+			utils.HandleErr("Failed to delete droplet:", err)
 
 		case "aws":
 			defaultRegion, err := aws.LoadConfig()
-			utils.HandleErr("Failed to load config", err)
+			utils.HandleErr("Failed to load config:", err)
 
 			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
-			utils.HandleErr("Failed to setup AWS Session", err)
+			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			instanceID, err := aws.GetInstanceID(session, name)
-			utils.HandleErr("Failed to fetch EC2 instance ID", err)
+			utils.HandleErr("Failed to fetch EC2 instance ID:", err)
 
 			aws.DeleteEc2Instance(session, instanceID)
-			utils.HandleErr("Failed to delete EC2 instance ID", err)
+			utils.HandleErr("Failed to delete EC2 instance ID:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

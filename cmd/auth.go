@@ -22,10 +22,10 @@ Required settings will be prompted based on provider`,
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
 			err := do.Configure()
-			utils.HandleErr("Failed to setup configuration files", err)
+			utils.HandleErr("Failed to setup configuration files:", err)
 		case "aws":
 			err := aws.Configure()
-			utils.HandleErr("Failed to setup configuration files", err)
+			utils.HandleErr("Failed to setup configuration files:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

@@ -22,22 +22,22 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
 			patToken, defaultRegion, err := do.LoadConfig()
-			utils.HandleErr("Failed to load config", err)
+			utils.HandleErr("Failed to load config:", err)
 
 			client := do.CreateDoClient(patToken, defaultRegion)
 			err = do.Authenticate(client)
-			utils.HandleErr("Failed to authenticate", err)
+			utils.HandleErr("Failed to authenticate:", err)
 
 			dropletID, err := do.GetDoDroplet(client, name)
-			utils.HandleErr("Faiiled to fetch droplet ID", err)
+			utils.HandleErr("Faiiled to fetch droplet ID:", err)
 
 			do.PrintDropletStatus(client, dropletID)
 		case "aws":
 			defaultRegion, err := aws.LoadConfig()
-			utils.HandleErr("Failed to load config", err)
+			utils.HandleErr("Failed to load config:", err)
 
 			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
-			utils.HandleErr("Failed to setup AWS Session", err)
+			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			aws.PrintEc2Status(session, name)
 		default:

@@ -18,7 +18,7 @@ func CreateAwsSession(defaultRegion, credentialsFile string) (*session.Session, 
 		Credentials: credentials.NewSharedCredentials(credentialsFile, "default")},
 	)
 	if err != nil {
-		return nil, errors.Errorf("Failed to create session", err)
+		return nil, errors.Errorf("Failed to create session:", err)
 	}
 	return sess, nil
 }
@@ -37,7 +37,7 @@ func CreateEc2Instance(
 	})
 
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create EC2 instance %s", name)
+		return errors.Wrapf(err, "Failed to create EC2 instance %s:", name)
 	}
 	fmt.Println("Created instance", *result.Instances[0].InstanceId)
 
@@ -52,7 +52,7 @@ func CreateEc2Instance(
 		},
 	})
 	if err != nil {
-		return errors.Wrapf(err, "Failed to tag instance %s with name %s",
+		return errors.Wrapf(err, "Failed to tag instance %s with name %s:",
 			*result.Instances[0].InstanceId, name)
 	}
 	fmt.Println("Successfully tagged instance")
@@ -79,13 +79,13 @@ func GetInstanceID(sess *session.Session, name string) (string, error) {
 			switch aerr.Code() {
 			default:
 				return "", errors.Wrapf(
-					errors.New(aerr.Error()), "Failed to describe instance %s", name)
+					errors.New(aerr.Error()), "Failed to describe instance %s:", name)
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
 			return "", errors.Wrapf(
-				errors.New(err.Error()), "Failed to describe instance %s", name)
+				errors.New(err.Error()), "Failed to describe instance %s:", name)
 		}
 	}
 	return *result.Reservations[0].Instances[0].InstanceId, nil
@@ -110,12 +110,12 @@ func PrintEc2Status(sess *session.Session, name string) {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				fmt.Printf("Failed to describe instance %s -- %s", name, aerr.Error())
+				fmt.Printf("Failed to describe instance %s -- %s:", name, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
-			fmt.Printf("Failed to describe instance %s -- %s", name, err.Error())
+			fmt.Printf("Failed to describe instance %s -- %s:", name, err.Error())
 		}
 	}
 
@@ -146,13 +146,13 @@ func DeleteEc2Instance(sess *session.Session, id string) error {
 			switch aerr.Code() {
 			default:
 				return errors.Wrapf(
-					errors.New(aerr.Error()), "Failed to terminate instance %s", id)
+					errors.New(aerr.Error()), "Failed to terminate instance %s:", id)
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
 			return errors.Wrapf(
-				errors.New(err.Error()), "Failed to describe instance %s", id)
+				errors.New(err.Error()), "Failed to describe instance %s:", id)
 		}
 
 	}
