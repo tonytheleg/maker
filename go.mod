@@ -3,8 +3,8 @@ module maker
 go 1.15
 
 require (
-	github.com/aws/aws-sdk-go v1.36.27
-	github.com/digitalocean/godo v1.56.0
+	github.com/aws/aws-sdk-go v1.36.28
+	github.com/digitalocean/godo v1.57.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect

@@ -102,6 +102,7 @@ func CreateConfigFile(config *ConfigFile) error {
 		viper.Set("default_region", config.DefaultRegion)
 		return viper.WriteConfigAs(ConfigPath)
 	*/
+	return nil
 }
 
 // LoadConfig parses the viper config file and loads into a struct
@@ -116,4 +117,5 @@ func LoadConfig() (string, string, error) {
 
 		return viper.GetString("pat_token"), viper.GetString("default_region"), nil
 	*/
+	return "", "", nil
 }

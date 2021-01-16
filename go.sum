@@ -46,6 +46,8 @@ github.com/aws/aws-sdk-go v1.36.26 h1:710u7Q1xpbzpigh/RPPUXwr/5X/VwCxTXSeam8icgo
 github.com/aws/aws-sdk-go v1.36.26/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/aws/aws-sdk-go v1.36.27 h1:wc3xLJJHog2SwiqlLnrLUuct/n+dBjB45QhuZw2psVE=
 github.com/aws/aws-sdk-go v1.36.27/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
+github.com/aws/aws-sdk-go v1.36.28 h1:JVRN7BZgwQ31SQCBwG5QM445+ynJU0ruKu+miFIijYY=
+github.com/aws/aws-sdk-go v1.36.28/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
@@ -72,6 +74,8 @@ github.com/digitalocean/godo v1.54.0 h1:KP0Nv87pgViR8k/7De3VrmflCL5pJqXbNnkcw0bw
 github.com/digitalocean/godo v1.54.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/digitalocean/godo v1.56.0 h1:wXqWJyywrDO3YO2T4Kh8TwbCPOa+OI2vC8qh0/Ngmjk=
 github.com/digitalocean/godo v1.56.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
+github.com/digitalocean/godo v1.57.0 h1:uCpe0sRIZ/sJWxWDsJyBPBjUfSvxop+WHkHiSf+tjjM=
+github.com/digitalocean/godo v1.57.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
