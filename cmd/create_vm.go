@@ -41,6 +41,8 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 
 			aws.CreateEc2Instance(session, name, defaultRegion, image, size)
 			utils.HandleErr("Failed to create EC2 instance:", err)
+		case "gcp":
+			fmt.Println("gcp")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

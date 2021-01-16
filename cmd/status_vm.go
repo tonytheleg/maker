@@ -40,6 +40,8 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			aws.PrintEc2Status(session, name)
+		case "gcp":
+			fmt.Println("gcp")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

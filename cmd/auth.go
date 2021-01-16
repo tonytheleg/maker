@@ -26,6 +26,8 @@ Required settings will be prompted based on provider`,
 		case "aws":
 			err := aws.Configure()
 			utils.HandleErr("Failed to setup configuration files:", err)
+		case "gcp":
+			fmt.Println("gcp")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

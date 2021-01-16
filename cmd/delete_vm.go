@@ -46,6 +46,8 @@ Usage: maker delete vm -p do -n VM-NAME`,
 
 			aws.DeleteEc2Instance(session, instanceID)
 			utils.HandleErr("Failed to delete EC2 instance ID:", err)
+		case "gcp":
+			fmt.Println("gcp")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
