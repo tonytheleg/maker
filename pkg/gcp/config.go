@@ -8,10 +8,14 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 // ConfigFile makes up the required settings in a DO config file
 type ConfigFile struct {
+	DefaultRegion string
+	GcpProject    string
+	Keyfile       string
 }
 
 // HomeDir stores the path of the current users Home directory
@@ -45,8 +49,8 @@ func Configure() error {
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
+		fmt.Println("Config file generated at", ConfigPath)
 	}
-	fmt.Println("Config file generated at", ConfigPath)
 	ShowCurrentConfig()
 	return nil
 }
@@ -78,44 +82,43 @@ func ShowCurrentConfig() error {
 
 // CreateConfigFile makes the config file to use in all DO commands
 func CreateConfigFile(config *ConfigFile) error {
-	/*
-		// ask for PAT token
-		fmt.Println("Please authenticate using your Digital Ocean account...")
-		fmt.Println("Tokens can be generated at https://cloud.digitalocean.com/account/api/tokens")
-		fmt.Print("Enter PAT Token: ")
-		pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
-		if err != nil {
-			return errors.Errorf("Failed to capture password:", err)
-		}
-		config.PatToken = string(pass)
-		println()
+	// ask for default region
+	var region string
+	fmt.Print("Enter Default Compute Zone (ie: us-east1-b): ")
+	fmt.Scanln(&region)
+	config.DefaultRegion = string(region)
+	println()
 
-		// ask for default region
-		var region string
-		fmt.Print("Default Region: ")
-		fmt.Scanln(&region)
-		config.DefaultRegion = string(region)
-		println()
+	// ask for default GCP Project
+	var project string
+	fmt.Print("Enter Target GCP Project: ")
+	fmt.Scanln(&project)
+	config.GcpProject = string(project)
+	println()
 
-		viper.SetConfigType("yaml")
-		viper.Set("pat_token", config.PatToken)
-		viper.Set("default_region", config.DefaultRegion)
-		return viper.WriteConfigAs(ConfigPath)
-	*/
-	return nil
+	// ask for path to key json
+	var keyfile string
+	fmt.Println("GCP requires a Service Account Key file to make requests")
+	fmt.Println("See 'https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console' for help")
+	fmt.Printf("\nEnter path to your key file (full path): ")
+	fmt.Scanln(&keyfile)
+	config.Keyfile = string(keyfile)
+	println()
+
+	viper.SetConfigType("yaml")
+	viper.Set("keyfile", config.Keyfile)
+	viper.Set("default_region", config.DefaultRegion)
+	viper.Set("gcp_project", config.GcpProject)
+	return viper.WriteConfigAs(ConfigPath)
 }
 
 // LoadConfig parses the viper config file and loads into a struct
-func LoadConfig() (string, string, error) {
-	/*
-		viper.SetConfigFile(ConfigPath)
-		viper.SetConfigType("yml")
-		err := viper.ReadInConfig()
-		if err != nil {
-			return "", "", errors.Errorf("Error reading config file %s:", ConfigPath, err)
-		}
-
-		return viper.GetString("pat_token"), viper.GetString("default_region"), nil
-	*/
-	return "", "", nil
+func LoadConfig() (string, string, string, error) {
+	viper.SetConfigFile(ConfigPath)
+	viper.SetConfigType("yaml")
+	err := viper.ReadInConfig()
+	if err != nil {
+		return "", "", "", errors.Errorf("Error reading config file %s:", ConfigPath, err)
+	}
+	return viper.GetString("keyfile"), viper.GetString("default_region"), viper.GetString("gcp_project"), nil
 }

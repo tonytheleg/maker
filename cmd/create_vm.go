@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -42,7 +43,14 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 			aws.CreateEc2Instance(session, name, defaultRegion, image, size)
 			utils.HandleErr("Failed to create EC2 instance:", err)
 		case "gcp":
-			fmt.Println("gcp")
+			keyfile, defaultRegion, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			service, err := gcp.CreateGceService(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.CreateGceInstance(service, name, defaultRegion, gcpProject, size, image)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

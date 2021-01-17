@@ -1,102 +1,77 @@
 package gcp
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/digitalocean/godo"
 	"github.com/pkg/errors"
+	"golang.org/x/net/context"
+	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/option"
 )
 
-// CreateDoClient creates a new client to interact with Digital Ocean
-func CreateGceClient(patToken, defaultRegion string) *godo.Client {
-	client := godo.NewFromToken(patToken)
-	return client
+// CreateGceService creates a new client to interact with Digital Ocean
+func CreateGceService(keyfile string) (*compute.Service, error) {
+	ctx := context.Background()
+	computeService, err := compute.NewService(
+		ctx, option.WithCredentialsFile(keyfile))
+	if err != nil {
+		return nil, errors.Errorf("Failed to create client: ", err)
+	}
+	return computeService, nil
 }
 
-// Authenticate gets account info and prints it
-func Authenticate(client *godo.Client) error {
-	ctx := context.TODO()
-	_, _, err := client.Account.Get(ctx)
-	if err != nil {
-		return errors.Errorf("Failed to create context:", err)
+// CreateGceInstance creates a droplet with provided specs
+func CreateGceInstance(computeService *compute.Service, name, zone, project, machineType, diskImage string) error {
+	// image list https://console.cloud.google.com/compute/images
+	ctx := context.Background()
+	image := compute.AttachedDiskInitializeParams{SourceImage: diskImage}
+	machineTypePath := fmt.Sprintf("projects/%s/zones/%s/machineTypes/%s", project, zone, machineType)
+	fmt.Println(machineTypePath)
+	nics := []*compute.NetworkInterface{new(compute.NetworkInterface)}
+
+	disk := &compute.AttachedDisk{
+		Boot:             true,
+		InitializeParams: &image,
+		DiskSizeGb:       10,
 	}
+	disks := []*compute.AttachedDisk{disk}
+
+	rb := &compute.Instance{
+		MachineType:       machineTypePath,
+		Disks:             disks,
+		Name:              name,
+		NetworkInterfaces: nics,
+	}
+
+	resp, err := computeService.Instances.Insert(project, zone, rb).Context(ctx).Do()
+	if err != nil {
+		return errors.Errorf("Failed to create GCE Instance: ", err)
+	}
+	fmt.Printf("%#v\n", resp)
 	return nil
 }
 
-// CreateDoDroplet creates a droplet with provided specs
-func CreateGceInstance(client *godo.Client, name string, region string, sizeSlug string, imageSlug string) error {
-	ctx := context.TODO()
-	createRequest := &godo.DropletCreateRequest{
-		Name:   name,
-		Region: region,
-		Size:   sizeSlug,
-		Image: godo.DropletCreateImage{
-			Slug: imageSlug,
-		},
-	}
+// PrintInstanceStatus outputs some droplet info
+func PrintInstanceStatus(computeService *compute.Service, name, zone, project string) error {
+	ctx := context.Background()
 
-	droplet, _, err := client.Droplets.Create(ctx, createRequest)
+	resp, err := computeService.Instances.Get(project, zone, name).Context(ctx).Do()
 	if err != nil {
-		return errors.Errorf("Failed to create droplet:", err)
-	}
-	fmt.Println(droplet.Name, "created")
-	return nil
-}
-
-// GetDoDroplet grabs the droplet ID with the provided name
-func GetGceInstance(client *godo.Client, name string) (int, error) {
-	var dropletID int
-	ctx := context.TODO()
-	opt := &godo.ListOptions{
-		Page:    1,
-		PerPage: 200,
-	}
-
-	droplets, _, err := client.Droplets.List(ctx, opt)
-	if err != nil {
-		return 1, errors.Wrapf(err, "Could not list droplets to search for %s:", name)
-	}
-	for index := range droplets {
-		if droplets[index].Name == name {
-			dropletID = droplets[index].ID
-		}
-	}
-	if dropletID != 0 {
-		return dropletID, nil
-	}
-	return 1, errors.Wrapf(err, "Could not find droplet with name %s:", name)
-
-}
-
-// PrintDropletStatus outputs some droplet info
-func PrintInstanceStatus(client *godo.Client, id int) {
-	ctx := context.TODO()
-	droplet, _, err := client.Droplets.Get(ctx, id)
-	if err != nil {
-		fmt.Println("Could not fetch droplet status:", err)
+		return errors.Errorf("Failed to retreive GCE Instance %s: ", name, err)
 	}
 	fmt.Printf(
-		"Name: %s\nUID: %d\nMemory: %d\nDisk: %d\n\nDistribution: %s\nVersion: %s\n\nPublic IP: %s\nRegion: %s\nStatus: %s\n",
-		droplet.Name,
-		droplet.ID,
-		droplet.Memory,
-		droplet.Disk,
-		droplet.Image.Distribution,
-		droplet.Image.Name,
-		droplet.Networks.V4[1].IPAddress,
-		droplet.Region.Slug,
-		droplet.Status,
+		"Name: %#v\nDistribution: %#v\n\nPublic IP: %#v\nRegion: %#v\nStatus: %#v\n",
+		string(resp.Name),
+		string(resp.Disks[0].InitializeParams.SourceImage),
+		string(resp.NetworkInterfaces[0].NetworkIP),
+		string(resp.Zone),
+		string(resp.Status),
 	)
+	return nil
 }
 
-// DeleteDoDroplet delets a droplet with the provided ID
+// DeleteGceInstance delets a droplet with the provided ID
 func DeleteGceInstance(client *godo.Client, id int, name string) error {
-	ctx := context.TODO()
-	_, err := client.Droplets.Delete(ctx, id)
-	if err != nil {
-		return errors.Errorf("Deleting droplet failed:", err)
-	}
-	fmt.Println("Droplet", name, "deleted")
 	return nil
 }

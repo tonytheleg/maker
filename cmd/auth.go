@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -27,7 +28,8 @@ Required settings will be prompted based on provider`,
 			err := aws.Configure()
 			utils.HandleErr("Failed to setup configuration files:", err)
 		case "gcp":
-			fmt.Println("gcp")
+			err := gcp.Configure()
+			utils.HandleErr("Failed to setup configuration files:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

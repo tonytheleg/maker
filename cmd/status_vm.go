@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -41,7 +42,14 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 
 			aws.PrintEc2Status(session, name)
 		case "gcp":
-			fmt.Println("gcp")
+			keyfile, defaultRegion, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			service, err := gcp.CreateGceService(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.PrintInstanceStatus(service, name, defaultRegion, gcpProject)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
