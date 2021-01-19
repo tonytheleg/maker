@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -47,7 +48,14 @@ Usage: maker delete vm -p do -n VM-NAME`,
 			aws.DeleteEc2Instance(session, instanceID)
 			utils.HandleErr("Failed to delete EC2 instance ID:", err)
 		case "gcp":
-			fmt.Println("gcp")
+			keyfile, defaultRegion, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			service, err := gcp.CreateGceService(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.DeleteGceInstance(service, name, defaultRegion, gcpProject)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

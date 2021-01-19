@@ -49,7 +49,7 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 			utils.HandleErr("Failed to create a Compute Service:", err)
 
 			err = gcp.PrintInstanceStatus(service, name, defaultRegion, gcpProject)
-			utils.HandleErr("Failed to create GCE instance:", err)
+			utils.HandleErr("Failed to fetch GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

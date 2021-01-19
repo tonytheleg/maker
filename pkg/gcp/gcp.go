@@ -2,15 +2,15 @@ package gcp
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/digitalocean/godo"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
 )
 
-// CreateGceService creates a new client to interact with Digital Ocean
+// CreateGceService creates a new client to interact with GCP
 func CreateGceService(keyfile string) (*compute.Service, error) {
 	ctx := context.Background()
 	computeService, err := compute.NewService(
@@ -28,6 +28,8 @@ func CreateGceInstance(computeService *compute.Service, name, zone, project, mac
 	image := compute.AttachedDiskInitializeParams{SourceImage: diskImage}
 	machineTypePath := fmt.Sprintf("projects/%s/zones/%s/machineTypes/%s", project, zone, machineType)
 	fmt.Println(machineTypePath)
+
+	// need to figure out how to assign public IP
 	nics := []*compute.NetworkInterface{new(compute.NetworkInterface)}
 
 	disk := &compute.AttachedDisk{
@@ -60,18 +62,27 @@ func PrintInstanceStatus(computeService *compute.Service, name, zone, project st
 	if err != nil {
 		return errors.Errorf("Failed to retreive GCE Instance %s: ", name, err)
 	}
+	os := strings.Split(resp.Disks[0].Licenses[0], "/")
+	currentZone := strings.Split(resp.Zone, "/")
 	fmt.Printf(
-		"Name: %#v\nDistribution: %#v\n\nPublic IP: %#v\nRegion: %#v\nStatus: %#v\n",
-		string(resp.Name),
-		string(resp.Disks[0].InitializeParams.SourceImage),
-		string(resp.NetworkInterfaces[0].NetworkIP),
-		string(resp.Zone),
-		string(resp.Status),
+		"Name: %s\nDistribution: %s\n\nPublic IP: %s\nZone: %s\nStatus: %s\n",
+		resp.Name,
+		os[len(os)-1],
+		resp.NetworkInterfaces[0].NetworkIP,
+		currentZone[len(currentZone)-1],
+		resp.Status,
 	)
 	return nil
 }
 
 // DeleteGceInstance delets a droplet with the provided ID
-func DeleteGceInstance(client *godo.Client, id int, name string) error {
+func DeleteGceInstance(computeService *compute.Service, name, zone, project string) error {
+	ctx := context.Background()
+
+	resp, err := computeService.Instances.Delete(project, zone, name).Context(ctx).Do()
+	if err != nil {
+		return errors.Errorf("Failed to delete GCE Instance %s: ", name, err)
+	}
+	fmt.Printf("%#v\n", resp)
 	return nil
 }
