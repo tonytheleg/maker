@@ -30,7 +30,17 @@ func CreateGceInstance(computeService *compute.Service, name, zone, project, mac
 	fmt.Println(machineTypePath)
 
 	// need to figure out how to assign public IP
-	nics := []*compute.NetworkInterface{new(compute.NetworkInterface)}
+	publicNic := &compute.AccessConfig{
+		Name:        "External NAT",
+		NetworkTier: "PREMIUM",
+		Type:        "ONE_TO_ONE_NAT",
+	}
+	publicNics := []*compute.AccessConfig{publicNic}
+
+	nic := &compute.NetworkInterface{
+		AccessConfigs: publicNics,
+	}
+	nics := []*compute.NetworkInterface{nic}
 
 	disk := &compute.AttachedDisk{
 		Boot:             true,
