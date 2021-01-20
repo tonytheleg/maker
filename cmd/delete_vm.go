@@ -56,6 +56,8 @@ Usage: maker delete vm -p do -n VM-NAME`,
 
 			err = gcp.DeleteGceInstance(service, name, defaultRegion, gcpProject)
 			utils.HandleErr("Failed to create GCE instance:", err)
+		case "azure":
+			fmt.Println("azure called")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

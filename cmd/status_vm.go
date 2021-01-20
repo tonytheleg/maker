@@ -50,6 +50,8 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 
 			err = gcp.PrintInstanceStatus(service, name, defaultRegion, gcpProject)
 			utils.HandleErr("Failed to fetch GCE instance:", err)
+		case "azure":
+			fmt.Println("azure called")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

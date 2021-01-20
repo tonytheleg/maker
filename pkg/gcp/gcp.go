@@ -27,9 +27,6 @@ func CreateGceInstance(computeService *compute.Service, name, zone, project, mac
 	ctx := context.Background()
 	image := compute.AttachedDiskInitializeParams{SourceImage: diskImage}
 	machineTypePath := fmt.Sprintf("projects/%s/zones/%s/machineTypes/%s", project, zone, machineType)
-	fmt.Println(machineTypePath)
-
-	// need to figure out how to assign public IP
 	publicNic := &compute.AccessConfig{
 		Name:        "External NAT",
 		NetworkTier: "PREMIUM",
@@ -78,7 +75,7 @@ func PrintInstanceStatus(computeService *compute.Service, name, zone, project st
 		"Name: %s\nDistribution: %s\n\nPublic IP: %s\nZone: %s\nStatus: %s\n",
 		resp.Name,
 		os[len(os)-1],
-		resp.NetworkInterfaces[0].NetworkIP,
+		resp.NetworkInterfaces[0].AccessConfigs[0].NatIP,
 		currentZone[len(currentZone)-1],
 		resp.Status,
 	)
@@ -89,10 +86,10 @@ func PrintInstanceStatus(computeService *compute.Service, name, zone, project st
 func DeleteGceInstance(computeService *compute.Service, name, zone, project string) error {
 	ctx := context.Background()
 
-	resp, err := computeService.Instances.Delete(project, zone, name).Context(ctx).Do()
+	_, err := computeService.Instances.Delete(project, zone, name).Context(ctx).Do()
 	if err != nil {
 		return errors.Errorf("Failed to delete GCE Instance %s: ", name, err)
 	}
-	fmt.Printf("%#v\n", resp)
+	fmt.Printf("Instance %s has been deleted\n", name)
 	return nil
 }

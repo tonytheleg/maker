@@ -30,6 +30,8 @@ Required settings will be prompted based on provider`,
 		case "gcp":
 			err := gcp.Configure()
 			utils.HandleErr("Failed to setup configuration files:", err)
+		case "azure":
+			fmt.Println("azure called")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

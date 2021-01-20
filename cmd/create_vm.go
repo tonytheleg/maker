@@ -51,6 +51,8 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 
 			err = gcp.CreateGceInstance(service, name, defaultRegion, gcpProject, size, image)
 			utils.HandleErr("Failed to create GCE instance:", err)
+		case "azure":
+			fmt.Println("azure called")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
