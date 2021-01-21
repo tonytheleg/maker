@@ -4,6 +4,10 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.75.0 // indirect
+	github.com/Azure/azure-sdk-for-go v50.1.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6 // indirect
+	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/aws/aws-sdk-go v1.36.28
 	github.com/digitalocean/godo v1.57.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
