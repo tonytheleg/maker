@@ -12,7 +12,7 @@ import (
 )
 
 // CreateAwsSession sets up a new session using the config file
-func CreateAwsSession(defaultRegion, credentialsFile string) (*session.Session, error) {
+func CreateAwsSession(credentialsFile, defaultRegion string) (*session.Session, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(defaultRegion),
 		Credentials: credentials.NewSharedCredentials(credentialsFile, "default")},
@@ -24,9 +24,7 @@ func CreateAwsSession(defaultRegion, credentialsFile string) (*session.Session, 
 }
 
 // CreateEc2Instance creates an ec2 instance with provided specs
-func CreateEc2Instance(
-	sess *session.Session, name string, region string, ami string, instanceType string) error {
-
+func CreateEc2Instance(sess *session.Session, name, region, instanceType, ami string) error {
 	// Create the instance
 	svc := ec2.New(sess)
 	result, err := svc.RunInstances(&ec2.RunInstancesInput{

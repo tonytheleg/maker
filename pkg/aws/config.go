@@ -31,7 +31,7 @@ var CredsName = "aws_credentials"
 // CredsPath is the full path to the ConfigFile
 var CredsPath = filepath.Join(HomeDir, CredsFolder, CredsName)
 
-// Configure sets the PAT token and default Region for Digital Ocean
+// Configure sets up the aws credentials file needed to auth with AWS
 func Configure() error {
 	// check that .maker exists
 	_, err := os.Stat(CredsFolder)
@@ -56,7 +56,7 @@ func Configure() error {
 	return nil
 }
 
-// ShowCurrentCreds prints out the current config file
+// ShowCurrentCreds prints out the current credentials file
 func ShowCurrentCreds() error {
 	data, err := ioutil.ReadFile(CredsPath)
 	if err != nil {
@@ -81,7 +81,7 @@ func ShowCurrentCreds() error {
 	return nil
 }
 
-// CreateCredsFile makes the config file to use in all DO commands
+// CreateCredsFile makes the credentials file to use in all AWS commands
 func CreateCredsFile(creds *CredsFile) error {
 	// ask for access key
 	var accessKey string

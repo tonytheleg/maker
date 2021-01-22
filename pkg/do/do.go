@@ -14,7 +14,7 @@ func CreateDoClient(patToken, defaultRegion string) *godo.Client {
 	return client
 }
 
-// Authenticate gets account info and prints it
+// Authenticate verifies ability to access DO through client
 func Authenticate(client *godo.Client) error {
 	ctx := context.TODO()
 	_, _, err := client.Account.Get(ctx)

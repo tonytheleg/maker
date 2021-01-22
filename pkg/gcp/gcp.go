@@ -21,8 +21,8 @@ func CreateGceService(keyfile string) (*compute.Service, error) {
 	return computeService, nil
 }
 
-// CreateGceInstance creates a droplet with provided specs
-func CreateGceInstance(computeService *compute.Service, name, zone, project, machineType, diskImage string) error {
+// CreateGceInstance creates a compute instance with provided specs
+func CreateGceInstance(computeService *compute.Service, name, project, zone, machineType, diskImage string) error {
 	// image list https://console.cloud.google.com/compute/images
 	ctx := context.Background()
 	image := compute.AttachedDiskInitializeParams{SourceImage: diskImage}
@@ -61,8 +61,8 @@ func CreateGceInstance(computeService *compute.Service, name, zone, project, mac
 	return nil
 }
 
-// PrintInstanceStatus outputs some droplet info
-func PrintInstanceStatus(computeService *compute.Service, name, zone, project string) error {
+// PrintInstanceStatus outputs instance info
+func PrintInstanceStatus(computeService *compute.Service, name, project, zone string) error {
 	ctx := context.Background()
 
 	resp, err := computeService.Instances.Get(project, zone, name).Context(ctx).Do()
@@ -83,7 +83,7 @@ func PrintInstanceStatus(computeService *compute.Service, name, zone, project st
 }
 
 // DeleteGceInstance delets a droplet with the provided ID
-func DeleteGceInstance(computeService *compute.Service, name, zone, project string) error {
+func DeleteGceInstance(computeService *compute.Service, name, project, zone string) error {
 	ctx := context.Background()
 
 	_, err := computeService.Instances.Delete(project, zone, name).Context(ctx).Do()

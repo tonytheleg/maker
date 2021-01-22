@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ConfigFile makes up the required settings in a DO config file
+// ConfigFile makes up the required settings in a GCP config file
 type ConfigFile struct {
 	DefaultRegion string
 	GcpProject    string
@@ -30,7 +30,7 @@ var ConfigName = "gcp_config"
 // ConfigPath is the full path to the ConfigFile
 var ConfigPath = filepath.Join(HomeDir, ConfigFolder, ConfigName)
 
-// Configure sets the PAT token and default Region for Digital Ocean
+// Configure sets path to the key file requried to auth with a service accoutn
 func Configure() error {
 	// check that .maker exists
 	_, err := os.Stat(ConfigFolder)
@@ -63,6 +63,7 @@ func ShowCurrentConfig() error {
 	}
 	fmt.Printf("\nCurrent Config:\n\n%s", string(data))
 
+	// show config and confirm
 	var confirmation string
 	fmt.Printf("\nIs this info accurate? (Y/n): ")
 	fmt.Scanln(&confirmation)
@@ -80,7 +81,7 @@ func ShowCurrentConfig() error {
 	return nil
 }
 
-// CreateConfigFile makes the config file to use in all DO commands
+// CreateConfigFile makes the config file to use in all GCP commands
 func CreateConfigFile(config *ConfigFile) error {
 	// ask for default region
 	var region string

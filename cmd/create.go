@@ -18,4 +18,5 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 	// adds the "vm" subcommand (maker create vm)
 	createCmd.AddCommand(createVMCmd)
+	createCmd.AddCommand(createBucketCmd)
 }

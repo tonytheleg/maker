@@ -18,4 +18,5 @@ func init() {
 	rootCmd.AddCommand(deleteCmd)
 	// adds the "vm" subcommand (maker delete vm)
 	deleteCmd.AddCommand(deleteVMCmd)
+	deleteCmd.AddCommand(deleteBucketCmd)
 }

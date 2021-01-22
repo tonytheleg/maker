@@ -18,4 +18,5 @@ func init() {
 	rootCmd.AddCommand(statusCmd)
 	// adds the "vm" subcommand (maker status vm)
 	statusCmd.AddCommand(statusVMCmd)
+	statusCmd.AddCommand(statusBucketCmd)
 }

@@ -63,6 +63,7 @@ func ShowCurrentConfig() error {
 	}
 	fmt.Printf("\nCurrent Config:\n\n%s", string(data))
 
+	// show config and confirm
 	var confirmation string
 	fmt.Printf("\nIs this info accurate? (Y/n): ")
 	fmt.Scanln(&confirmation)
@@ -80,7 +81,7 @@ func ShowCurrentConfig() error {
 	return nil
 }
 
-// CreateConfigFile makes the config file to use in all DO commands
+// CreateConfigFile creates the config file to use in all DO commands
 func CreateConfigFile(config *ConfigFile) error {
 	// ask for PAT token
 	fmt.Println("Please authenticate using your Digital Ocean account...")
@@ -100,6 +101,7 @@ func CreateConfigFile(config *ConfigFile) error {
 	config.DefaultRegion = string(region)
 	println()
 
+	// create the config
 	viper.SetConfigType("yaml")
 	viper.Set("pat_token", config.PatToken)
 	viper.Set("default_region", config.DefaultRegion)
@@ -108,7 +110,6 @@ func CreateConfigFile(config *ConfigFile) error {
 
 // LoadConfig parses the viper config file and loads into a struct
 func LoadConfig() (string, string, error) {
-	// This all needs to be cleaned up using vars but for now...
 	viper.SetConfigFile(ConfigPath)
 	viper.SetConfigType("yml")
 	err := viper.ReadInConfig()

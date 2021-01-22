@@ -37,19 +37,19 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 			defaultRegion, err := aws.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
-			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
-			aws.CreateEc2Instance(session, name, defaultRegion, image, size)
+			aws.CreateEc2Instance(session, name, defaultRegion, size, image)
 			utils.HandleErr("Failed to create EC2 instance:", err)
 		case "gcp":
-			keyfile, defaultRegion, gcpProject, err := gcp.LoadConfig()
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
 			service, err := gcp.CreateGceService(keyfile)
 			utils.HandleErr("Failed to create a Compute Service:", err)
 
-			err = gcp.CreateGceInstance(service, name, defaultRegion, gcpProject, size, image)
+			err = gcp.CreateGceInstance(service, name, gcpProject, defaultZone, size, image)
 			utils.HandleErr("Failed to create GCE instance:", err)
 		case "azure":
 			fmt.Println("azure called")
