@@ -37,18 +37,18 @@ Usage: maker status vm -p PROVIDER -n VM-NAME`,
 			defaultRegion, err := aws.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
-			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			aws.PrintEc2Status(session, name)
 		case "gcp":
-			keyfile, defaultRegion, gcpProject, err := gcp.LoadConfig()
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
 			service, err := gcp.CreateGceService(keyfile)
 			utils.HandleErr("Failed to create a Compute Service:", err)
 
-			err = gcp.PrintInstanceStatus(service, name, defaultRegion, gcpProject)
+			err = gcp.PrintInstanceStatus(service, name, gcpProject, defaultZone)
 			utils.HandleErr("Failed to fetch GCE instance:", err)
 		case "azure":
 			fmt.Println("azure called")

@@ -154,7 +154,7 @@ func DeleteEc2Instance(sess *session.Session, id string) error {
 		}
 
 	}
-	fmt.Printf("Success: %s is %s",
+	fmt.Printf("Success: %s is %s\n",
 		*result.TerminatingInstances[0].InstanceId,
 		*result.TerminatingInstances[0].CurrentState.Name,
 	)

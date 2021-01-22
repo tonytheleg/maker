@@ -40,7 +40,7 @@ Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
 			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
-			aws.CreateEc2Instance(session, name, defaultRegion, size, image)
+			err = aws.CreateEc2Instance(session, name, defaultRegion, size, image)
 			utils.HandleErr("Failed to create EC2 instance:", err)
 		case "gcp":
 			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()

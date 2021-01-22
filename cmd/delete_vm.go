@@ -39,22 +39,22 @@ Usage: maker delete vm -p do -n VM-NAME`,
 			defaultRegion, err := aws.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
-			session, err := aws.CreateAwsSession(defaultRegion, aws.CredsPath)
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			instanceID, err := aws.GetInstanceID(session, name)
 			utils.HandleErr("Failed to fetch EC2 instance ID:", err)
 
-			aws.DeleteEc2Instance(session, instanceID)
+			err = aws.DeleteEc2Instance(session, instanceID)
 			utils.HandleErr("Failed to delete EC2 instance ID:", err)
 		case "gcp":
-			keyfile, defaultRegion, gcpProject, err := gcp.LoadConfig()
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
 			service, err := gcp.CreateGceService(keyfile)
 			utils.HandleErr("Failed to create a Compute Service:", err)
 
-			err = gcp.DeleteGceInstance(service, name, defaultRegion, gcpProject)
+			err = gcp.DeleteGceInstance(service, name, gcpProject, defaultZone)
 			utils.HandleErr("Failed to create GCE instance:", err)
 		case "azure":
 			fmt.Println("azure called")
