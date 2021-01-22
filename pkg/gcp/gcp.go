@@ -23,9 +23,19 @@ func CreateGceService(keyfile string) (*compute.Service, error) {
 
 // CreateGceInstance creates a compute instance with provided specs
 func CreateGceInstance(computeService *compute.Service, name, project, zone, machineType, diskImage string) error {
-	// image list https://console.cloud.google.com/compute/images
+	// make sure image is provided in proper format for GCP
+	imageCheck := strings.Contains(diskImage, "/")
+	if !imageCheck {
+		err := errors.New("\nExample: 'ubuntu-os-cloud/ubuntu-1604-xenial-v20210119'")
+		err = errors.Wrapf(err, "\nImage name must be provided in 'project/name' format")
+		return err
+	}
+	s := strings.Split(diskImage, "/")
+	imageProject, imageName := s[0], s[1]
+	sourceImage := fmt.Sprintf("projects/%s/global/images/%s", imageProject, imageName)
+
 	ctx := context.Background()
-	image := compute.AttachedDiskInitializeParams{SourceImage: diskImage}
+	image := compute.AttachedDiskInitializeParams{SourceImage: sourceImage}
 	machineTypePath := fmt.Sprintf("projects/%s/zones/%s/machineTypes/%s", project, zone, machineType)
 	publicNic := &compute.AccessConfig{
 		Name:        "External NAT",
@@ -53,11 +63,11 @@ func CreateGceInstance(computeService *compute.Service, name, project, zone, mac
 		NetworkInterfaces: nics,
 	}
 
-	resp, err := computeService.Instances.Insert(project, zone, rb).Context(ctx).Do()
+	_, err := computeService.Instances.Insert(project, zone, rb).Context(ctx).Do()
 	if err != nil {
 		return errors.Errorf("Failed to create GCE Instance: ", err)
 	}
-	fmt.Printf("%#v\n", resp)
+	fmt.Printf("Compute Instance %s is being created\n", name)
 	return nil
 }
 
