@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -9,28 +11,40 @@ import (
 // deleteBucketCmd represents the deleteBucket command
 var deleteBucketCmd = &cobra.Command{
 	Use:   "bucket",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "deletes a storage bucket",
+	Long: `Used to delete a storage bucket on the specified provider:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage: maker delete bucket -p PROVIDER -n BUCKET-NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("deleteBucket called")
+		name, _ := cmd.Flags().GetString("name")
+
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+			accessKey := config.SpacesAccessKey
+			secretKey := config.SpacesSecretKey
+			endpoint := config.SpacesDefaultEndpoint
+
+			client := do.CreateDoSpacesClient(accessKey, secretKey, endpoint)
+			err = do.DeleteDoSpace(client, name)
+			utils.HandleErr("Failed to create Space:", err)
+		case "aws":
+			fmt.Println("aws", name)
+		case "gcp":
+			fmt.Println("gcp")
+		case "azure":
+			fmt.Println("azure")
+		default:
+			fmt.Printf("Unknown Provder -- %s", provider)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(deleteBucketCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deleteBucketCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deleteBucketCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Local flags which will only run when this command
+	deleteBucketCmd.Flags().StringP("name", "n", "", "name of the object")
+	deleteBucketCmd.MarkFlagRequired("name")
 }

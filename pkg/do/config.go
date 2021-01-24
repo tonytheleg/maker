@@ -15,11 +15,11 @@ import (
 
 // ConfigFile makes up the required settings in a DO config file
 type ConfigFile struct {
-	PatToken              string
-	DefaultRegion         string
-	SpacesAccessKey       string
-	SpacesSecretKey       string
-	SpacesDefaultEndpoint string
+	PatToken              string `mapstructure:"pat_token"`
+	DefaultRegion         string `mapstructure:"default_region"`
+	SpacesAccessKey       string `mapstructure:"spaces_access_key"`
+	SpacesSecretKey       string `mapstructure:"spaces_secret_key"`
+	SpacesDefaultEndpoint string `mapstructure:"spaces_endpoint_region"`
 }
 
 // ConfigName is the name of the config file used by Maker
@@ -55,21 +55,21 @@ func Configure() error {
 
 	switch task {
 	case "1":
-		err := CreateDropletConfigFile(&config)
+		err := CreateDropletConfigFile(config)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
 	case "2":
-		err := CreateSpacesConfigFile(&config)
+		err := CreateSpacesConfigFile(config)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
 	default:
-		err := CreateDropletConfigFile(&config)
+		err := CreateDropletConfigFile(config)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
-		err = CreateSpacesConfigFile(&config)
+		err = CreateSpacesConfigFile(config)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config file %s:", ConfigName)
 		}
@@ -182,17 +182,17 @@ func CreateSpacesConfigFile(config *ConfigFile) error {
 }
 
 // LoadConfig parses the viper config file and loads into a struct
-func LoadConfig() (ConfigFile, error) {
-	conf := &ConfigFile{}
+func LoadConfig() (*ConfigFile, error) {
 	viper.SetConfigFile(ConfigPath)
 	viper.SetConfigType("yml")
 	err := viper.ReadInConfig()
 	if err != nil {
-		return ConfigFile{}, errors.Errorf("Error reading config file %s:", ConfigPath, err)
+		return nil, errors.Errorf("Error reading config file %s:", ConfigPath, err)
 	}
+	conf := &ConfigFile{}
 	err = viper.Unmarshal(conf)
 	if err != nil {
-		return ConfigFile{}, errors.Errorf("Error reading config file %s:", ConfigPath, err)
+		return nil, errors.Errorf("Error reading config file %s:", ConfigPath, err)
 	}
-	return *conf, nil
+	return conf, nil
 }

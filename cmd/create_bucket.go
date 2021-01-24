@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -9,27 +11,30 @@ import (
 // createBucketCmd represents the createBucket command
 var createBucketCmd = &cobra.Command{
 	Use:   "bucket",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "creates a storage bucket",
+	Long: `Used to create a storage bucket on the specified provider:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage: maker create bucket -p PROVIDER -n BUCKET-NAME (Must be globally unique!`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
-		size, _ := cmd.Flags().GetString("size")
-		image, _ := cmd.Flags().GetString("image")
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			fmt.Println("do", name, size, image)
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+			accessKey := config.SpacesAccessKey
+			secretKey := config.SpacesSecretKey
+			endpoint := config.SpacesDefaultEndpoint
+
+			client := do.CreateDoSpacesClient(accessKey, secretKey, endpoint)
+			err = do.CreateDoSpace(client, name)
+			utils.HandleErr("Failed to create Space:", err)
 		case "aws":
-			fmt.Println("aws", name, size, image)
+			fmt.Println("aws", name)
 		case "gcp":
-			fmt.Println("gcp", name, size, image)
+			fmt.Println("gcp")
 		case "azure":
-			fmt.Println("azure", name, size, image)
+			fmt.Println("azure")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -39,13 +44,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(createBucketCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createBucketCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createBucketCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Local flags which will only run when this command
+	createBucketCmd.Flags().StringP("name", "n", "", "name of the object")
+	createBucketCmd.MarkFlagRequired("name")
 }
