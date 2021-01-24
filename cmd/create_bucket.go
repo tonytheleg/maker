@@ -23,13 +23,13 @@ to quickly create a Cobra application.`,
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			fmt.Println("do called")
+			fmt.Println("do", name, size, image)
 		case "aws":
-			fmt.Println("aws called")
+			fmt.Println("aws", name, size, image)
 		case "gcp":
-			fmt.Println("gcp called")
+			fmt.Println("gcp", name, size, image)
 		case "azure":
-			fmt.Println("azure called")
+			fmt.Println("azure", name, size, image)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

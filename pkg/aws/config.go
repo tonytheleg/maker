@@ -3,6 +3,7 @@ package aws
 import (
 	"fmt"
 	"io/ioutil"
+	"maker/pkg/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,26 +20,20 @@ type CredsFile struct {
 	DefaultRegion   string
 }
 
-// HomeDir stores the path of the current users Home directory
-var HomeDir, _ = os.UserHomeDir()
-
-// CredsFolder is the name of Makers config folder stored in Home
-var CredsFolder = ".maker"
-
 // CredsName is the name of the config file used by Maker
 var CredsName = "aws_credentials"
 
 // CredsPath is the full path to the ConfigFile
-var CredsPath = filepath.Join(HomeDir, CredsFolder, CredsName)
+var CredsPath = filepath.Join(utils.HomeDir, utils.ConfigFolder, CredsName)
 
 // Configure sets up the aws credentials file needed to auth with AWS
 func Configure() error {
 	// check that .maker exists
-	_, err := os.Stat(CredsFolder)
+	_, err := os.Stat(utils.ConfigFolder)
 	if os.IsExist(err) {
-		err := os.Mkdir(filepath.Join(HomeDir, CredsFolder), 0755)
+		err := os.Mkdir(filepath.Join(utils.HomeDir, utils.ConfigFolder), 0755)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to creds folder %s:", CredsFolder)
+			return errors.Wrapf(err, "Failed to creds folder %s:", utils.ConfigFolder)
 		}
 	}
 

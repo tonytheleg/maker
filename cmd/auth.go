@@ -22,7 +22,7 @@ Required settings will be prompted based on provider`,
 	Run: func(cmd *cobra.Command, args []string) {
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			err := do.Configure()
+			err := do.SetupConfig()
 			utils.HandleErr("Failed to setup configuration files:", err)
 		case "aws":
 			err := aws.Configure()

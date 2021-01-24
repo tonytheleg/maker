@@ -3,6 +3,7 @@ package gcp
 import (
 	"fmt"
 	"io/ioutil"
+	"maker/pkg/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,26 +19,20 @@ type ConfigFile struct {
 	Keyfile       string
 }
 
-// HomeDir stores the path of the current users Home directory
-var HomeDir, _ = os.UserHomeDir()
-
-// ConfigFolder is the name of Makers config folder stored in Home
-var ConfigFolder = ".maker"
-
 // ConfigName is the name of the config file used by Maker
 var ConfigName = "gcp_config"
 
 // ConfigPath is the full path to the ConfigFile
-var ConfigPath = filepath.Join(HomeDir, ConfigFolder, ConfigName)
+var ConfigPath = filepath.Join(utils.HomeDir, utils.ConfigFolder, ConfigName)
 
 // Configure sets path to the key file requried to auth with a service accoutn
 func Configure() error {
 	// check that .maker exists
-	_, err := os.Stat(ConfigFolder)
+	_, err := os.Stat(utils.ConfigFolder)
 	if os.IsExist(err) {
-		err := os.Mkdir(filepath.Join(HomeDir, ConfigFolder), 0755)
+		err := os.Mkdir(filepath.Join(utils.HomeDir, utils.ConfigFolder), 0755)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to create config directory %s:", ConfigFolder)
+			return errors.Wrapf(err, "Failed to create config directory %s:", utils.ConfigFolder)
 		}
 	}
 

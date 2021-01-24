@@ -22,8 +22,10 @@ Usage: maker delete vm -p do -n VM-NAME`,
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			patToken, defaultRegion, err := do.LoadConfig()
+			config, err := do.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
+
+			patToken, defaultRegion := config.PatToken, config.DefaultRegion
 
 			client := do.CreateDoClient(patToken, defaultRegion)
 			err = do.Authenticate(client)
