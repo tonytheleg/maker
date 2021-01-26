@@ -66,7 +66,7 @@ func GetDoSpaceInfo(client *s3.S3, name string) error {
 }
 
 // DeleteSpaceObjects removes all objects in a space to prep for deletion
-func DeleteSpaceObjects(client *s3.S3, name string) {
+func DeleteSpaceObjects(client *s3.S3, name string) error {
 	// confirm that deleteing space will delete all files first
 	var confirmation string
 	fmt.Printf("\nWARNING: To delete a Space, all objects in that space must be deleted!\n")
@@ -76,71 +76,41 @@ func DeleteSpaceObjects(client *s3.S3, name string) {
 	println()
 
 	if confirmation != "y" {
-		err := Configure()
+		return errors.Errorf("Cannot proceed -- must delete files before deleting Space")
+	} else {
+		// loop through all objects in bucket and delete first
+		listInput := &s3.ListObjectsInput{Bucket: aws.String(name)}
+		objects, err := client.ListObjects(listInput)
 		if err != nil {
-			return errors.Wrap(err, "Failed to configure")
+			return errors.Errorf("Failed to fetch objects in space:", err)
 		}
+
+		for _, obj := range objects.Contents {
+			input := &s3.DeleteObjectInput{
+				Bucket: aws.String(name),
+				Key:    aws.String(aws.StringValue(obj.Key)),
+			}
+
+			_, err := client.DeleteObject(input)
+			if err != nil {
+				return errors.Errorf("Failed to remove objects in space:", err)
+			}
+		}
+		fmt.Println("All objects from", name, "deleted")
 	}
 	return nil
-
-	// loop through all objects in bucket and delete first
-	listInput := &s3.ListObjectsInput{Bucket: aws.String(name)}
-	objects, err := client.ListObjects(listInput)
-	if err != nil {
-		return errors.Errorf("Failed to fetch objects in space:", err)
-	}
-
-	for _, obj := range objects.Contents {
-		fmt.Printf(" - %s\n", aws.StringValue(obj.Key))
-
-		input := &s3.DeleteObjectInput{
-			Bucket: aws.String(name),
-			Key:    aws.String(aws.StringValue(obj.Key)),
-		}
-
-		_, err := client.DeleteObject(input)
-		if err != nil {
-			return errors.Errorf("Failed to remove objects in space:", err)
-		}
-
-	}
 }
 
 // DeleteDoSpace deletes a Space bucket on DigitalOcean
 func DeleteDoSpace(client *s3.S3, name string) error {
-	// confirm that deleteing space will delete all files first
-
-	// loop through all objects in bucket and delete first
-	listInput := &s3.ListObjectsInput{Bucket: aws.String(name)}
-	objects, err := client.ListObjects(listInput)
-	if err != nil {
-		return errors.Errorf("Failed to fetch objects in space:", err)
-	}
-
-	for _, obj := range objects.Contents {
-		fmt.Printf(" - %s\n", aws.StringValue(obj.Key))
-
-		input := &s3.DeleteObjectInput{
-			Bucket: aws.String(name),
-			Key:    aws.String(aws.StringValue(obj.Key)),
-		}
-
-		_, err := client.DeleteObject(input)
-		if err != nil {
-			return errors.Errorf("Failed to remove objects in space:", err)
-		}
-
-	}
-	// delete bucket
 	deleteInput := &s3.DeleteBucketInput{
 		Bucket: aws.String(name),
 	}
 
-	_, err = client.DeleteBucket(deleteInput)
+	_, err := client.DeleteBucket(deleteInput)
 	if err != nil {
 		return errors.Errorf("Failed to delete Space:", err)
 	}
 	fmt.Println("Space", name, "deleted")
 	return nil
-
 }
