@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -9,28 +11,40 @@ import (
 // statusBucketCmd represents the statusBucket command
 var statusBucketCmd = &cobra.Command{
 	Use:   "bucket",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "fetches basic bucket info",
+	Long: `Confirms the bucket exists and provides minimal info for each provider:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage: maker status bucket -p PROVIDER -n BUCKET-NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("statusBucket called")
+		name, _ := cmd.Flags().GetString("name")
+
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+			accessKey := config.SpacesAccessKey
+			secretKey := config.SpacesSecretKey
+			endpoint := config.SpacesDefaultEndpoint
+
+			client := do.CreateDoSpacesClient(accessKey, secretKey, endpoint)
+			err = do.GetDoSpaceInfo(client, name)
+			utils.HandleErr("Failed to fetch Space:", err)
+		case "aws":
+			fmt.Println("aws", name)
+		case "gcp":
+			fmt.Println("gcp")
+		case "azure":
+			fmt.Println("azure")
+		default:
+			fmt.Printf("Unknown Provder -- %s", provider)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(statusBucketCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// statusBucketCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// statusBucketCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Local flags which will only run when this command
+	statusBucketCmd.Flags().StringP("name", "n", "", "name of the object")
+	statusBucketCmd.MarkFlagRequired("name")
 }

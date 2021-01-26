@@ -28,7 +28,7 @@ Usage: maker delete bucket -p PROVIDER -n BUCKET-NAME`,
 
 			client := do.CreateDoSpacesClient(accessKey, secretKey, endpoint)
 			err = do.DeleteDoSpace(client, name)
-			utils.HandleErr("Failed to create Space:", err)
+			utils.HandleErr("Failed to delete Space:", err)
 		case "aws":
 			fmt.Println("aws", name)
 		case "gcp":
