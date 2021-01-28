@@ -16,7 +16,9 @@ var createVMCmd = &cobra.Command{
 	Short: "creates a VM",
 	Long: `Used to create a VM object on the specified provider:
 
-Usage: maker create vm -s s-1vcpu-1gb -i ubuntu-16-04-x64 -n test -p do`,
+Example: 
+  maker create vm --provider PROVIDER --size SIZE --image IMAGE-NAME --name NAME
+  Sizes and Image names are provider specific! GCP requires images in 'project/image-name' format`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 		size, _ := cmd.Flags().GetString("size")
@@ -68,6 +70,6 @@ func init() {
 	createVMCmd.MarkFlagRequired("name")
 	createVMCmd.Flags().StringP("size", "s", "", "sets the size of the object")
 	createVMCmd.MarkFlagRequired("size")
-	createVMCmd.Flags().StringP("image", "i", "", "sets the image slug")
+	createVMCmd.Flags().StringP("image", "i", "", "sets the image type/slug")
 	createVMCmd.MarkFlagRequired("image")
 }

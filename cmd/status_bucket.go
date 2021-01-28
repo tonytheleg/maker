@@ -14,7 +14,8 @@ var statusBucketCmd = &cobra.Command{
 	Short: "fetches basic bucket info",
 	Long: `Confirms the bucket exists and provides minimal info for each provider:
 
-Usage: maker status bucket -p PROVIDER -n BUCKET-NAME`,
+Example: 
+  maker status bucket -p PROVIDER -n BUCKET-NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 

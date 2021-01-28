@@ -16,7 +16,8 @@ var deleteVMCmd = &cobra.Command{
 	Short: "deletes a VM",
 	Long: `Used to delete a VM object on the specified provider:
 
-Usage: maker delete vm -p do -n VM-NAME`,
+Example: 
+  maker delete vm --provider PROVIDER --name NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 

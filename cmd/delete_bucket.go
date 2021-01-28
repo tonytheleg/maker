@@ -13,8 +13,9 @@ var deleteBucketCmd = &cobra.Command{
 	Use:   "bucket",
 	Short: "deletes a storage bucket",
 	Long: `Used to delete a storage bucket on the specified provider:
-
-Usage: maker delete bucket -p PROVIDER -n BUCKET-NAME`,
+	
+Example: 
+  maker delete bucket -p PROVIDER -n BUCKET-NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 

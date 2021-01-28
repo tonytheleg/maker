@@ -16,7 +16,8 @@ var statusVMCmd = &cobra.Command{
 	Short: "gets the status of a VM",
 	Long: `Provides basic info and resource ID's for a VM
 
-Usage: maker status vm -p PROVIDER -n VM-NAME`,
+Example: 
+  maker status vm -p PROVIDER -n NAME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 
