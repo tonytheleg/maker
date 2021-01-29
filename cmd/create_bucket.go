@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -41,7 +42,14 @@ Example:
 			err = aws.CreateS3Bucket(client, name)
 			utils.HandleErr("Failed to create S3 bucket:", err)
 		case "gcp":
-			fmt.Println("gcp")
+			keyfile, _, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			client, err := gcp.CreateStorageClient(keyfile)
+			utils.HandleErr("Failed to create a Storage client:", err)
+
+			err = gcp.CreateStorageBucket(client, name, gcpProject)
+			utils.HandleErr("Failed to create Storage bucket:", err)
 		case "azure":
 			fmt.Println("azure")
 		default:

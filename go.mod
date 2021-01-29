@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.75.0 // indirect
+	cloud.google.com/go/storage v1.12.0
 	github.com/aws/aws-sdk-go v1.36.33
 	github.com/digitalocean/godo v1.57.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
