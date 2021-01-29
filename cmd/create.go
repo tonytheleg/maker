@@ -10,7 +10,6 @@ var createCmd = &cobra.Command{
 	Short: "creates the specified object on the specified platform",
 	Long: `Used to create various objects on the cloud provider specificed:
 
-Options: vm, cluster, bucket, db
 Example: maker create vm [flags]`,
 }
 

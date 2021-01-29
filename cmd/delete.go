@@ -10,7 +10,6 @@ var deleteCmd = &cobra.Command{
 	Short: "deletes the specified object on the specified platform",
 	Long: `Used to delete various objects on the cloud provider specificed:
 
-Options: vm, cluster, bucket, db
 Example: maker delete vm [flags]`,
 }
 

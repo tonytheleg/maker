@@ -10,7 +10,6 @@ var statusCmd = &cobra.Command{
 	Short: "gets the status of the specified object on the specified platform",
 	Long: `Provides basic information about objects on the cloud provider specificed:
 
-Options: vm, cluster, bucket, db
 Example: maker status vm [flags]`,
 }
 

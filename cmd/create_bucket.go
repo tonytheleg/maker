@@ -15,7 +15,8 @@ var createBucketCmd = &cobra.Command{
 	Short: "creates a storage bucket",
 	Long: `Used to create a storage bucket on the specified provider:
 
-Usage: maker create bucket -p PROVIDER -n BUCKET-NAME (Must be globally unique!`,
+Example: 
+  maker create bucket -p PROVIDER -n BUCKET-NAME (Must be globally unique!)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 

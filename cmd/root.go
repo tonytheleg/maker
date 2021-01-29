@@ -16,11 +16,9 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "maker",
 	Short: "creates various cloud services on multiple cloud platforms",
-	Long: `Maker can be used to create various types of services in various cloud providers such as VM's, 
-perhaps K8s clusters, storage buckets, etc. Its not meant to now be a full replacement for each 
-providers own CLI's or clients, but something handy for just creating a few key objects without 
-needing 4+ CLI's or multiple Terraform providers. Handy for spinning up and down infra for 
-labs and devlopment work kinda thing.`,
+	Long: `Maker can be used to create various types of services in various cloud providers such as VM's,
+K8s clusters, storage buckets, etc. Its not meant to be a full replacement for each 
+providers own CLI's or clients. Handy for spinning up and down infra for labs and devlopment work kinda thing.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
