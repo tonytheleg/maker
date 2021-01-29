@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -30,7 +31,14 @@ Usage: maker create bucket -p PROVIDER -n BUCKET-NAME (Must be globally unique!`
 			err = do.CreateDoSpace(client, name)
 			utils.HandleErr("Failed to create Space:", err)
 		case "aws":
-			fmt.Println("aws", name)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			client, err := aws.CreateS3Client(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to create client", err)
+
+			err = aws.CreateS3Bucket(client, name)
+			utils.HandleErr("Failed to create S3 bucket:", err)
 		case "gcp":
 			fmt.Println("gcp")
 		case "azure":

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -33,7 +34,17 @@ Usage: maker delete bucket -p PROVIDER -n BUCKET-NAME`,
 			err = do.DeleteDoSpace(client, name)
 			utils.HandleErr("Failed to delete Space:", err)
 		case "aws":
-			fmt.Println("aws", name)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			client, err := aws.CreateS3Client(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to create sessions", err)
+
+			err = aws.DeleteS3Objects(client, name)
+			utils.HandleErr("Failed to delete bucket", err)
+
+			err = aws.DeleteS3Bucket(client, name)
+			utils.HandleErr("Failed to deletes S3 bucket:", err)
 		case "gcp":
 			fmt.Println("gcp")
 		case "azure":
