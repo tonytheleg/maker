@@ -12,12 +12,10 @@ import (
 
 // createBucketCmd represents the createBucket command
 var createBucketCmd = &cobra.Command{
-	Use:   "bucket",
-	Short: "creates a storage bucket",
-	Long: `Used to create a storage bucket on the specified provider:
-
-Example: 
-  maker create bucket -p PROVIDER -n BUCKET-NAME (Must be globally unique!)`,
+	Use:     "bucket",
+	Short:   "creates a storage bucket",
+	Long:    `Used to create a storage bucket on the specified provider`,
+	Example: "maker create bucket --provider {do|aws|gcp} --name BUCKET-NAME (Must be globally unique!)",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 
@@ -50,8 +48,6 @@ Example:
 
 			err = gcp.CreateStorageBucket(client, name, gcpProject)
 			utils.HandleErr("Failed to create Storage bucket:", err)
-		case "azure":
-			fmt.Println("azure")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -62,6 +58,6 @@ func init() {
 	createCmd.AddCommand(createBucketCmd)
 
 	// Local flags which will only run when this command
-	createBucketCmd.Flags().StringP("name", "n", "", "name of the object")
+	createBucketCmd.Flags().StringP("name", "n", "", "name of the bucket")
 	createBucketCmd.MarkFlagRequired("name")
 }

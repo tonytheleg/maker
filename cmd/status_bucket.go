@@ -12,12 +12,10 @@ import (
 
 // statusBucketCmd represents the statusBucket command
 var statusBucketCmd = &cobra.Command{
-	Use:   "bucket",
-	Short: "fetches basic bucket info",
-	Long: `Confirms the bucket exists and provides minimal info for each provider:
-
-Example: 
-  maker status bucket -p PROVIDER -n BUCKET-NAME`,
+	Use:     "bucket",
+	Short:   "fetches basic bucket info",
+	Long:    `Confirms the bucket exists and provides minimal info for each provider`,
+	Example: "maker status bucket --provider {do|aws|gcp} --name BUCKET-NAME",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 
@@ -50,8 +48,6 @@ Example:
 
 			err = gcp.GetStorageBucketInfo(client, name)
 			utils.HandleErr("Failed to create Storage bucket:", err)
-		case "azure":
-			fmt.Println("azure")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -61,7 +57,6 @@ Example:
 func init() {
 	statusCmd.AddCommand(statusBucketCmd)
 
-	// Local flags which will only run when this command
-	statusBucketCmd.Flags().StringP("name", "n", "", "name of the object")
+	statusBucketCmd.Flags().StringP("name", "n", "", "name of the bucket")
 	statusBucketCmd.MarkFlagRequired("name")
 }

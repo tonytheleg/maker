@@ -12,12 +12,10 @@ import (
 
 // deleteVmCmd represents the delete vm command
 var deleteVMCmd = &cobra.Command{
-	Use:   "vm",
-	Short: "deletes a VM",
-	Long: `Used to delete a VM object on the specified provider:
-
-Example: 
-  maker delete vm --provider PROVIDER --name NAME`,
+	Use:     "vm",
+	Short:   "deletes a VM",
+	Long:    `Used to delete a VM object on the specified provider`,
+	Example: "maker delete vm --provider {do|aws|gcp} --name NAME",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 
@@ -59,8 +57,6 @@ Example:
 
 			err = gcp.DeleteGceInstance(service, name, gcpProject, defaultZone)
 			utils.HandleErr("Failed to create GCE instance:", err)
-		case "azure":
-			fmt.Println("azure called")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -70,7 +66,6 @@ Example:
 func init() {
 	deleteCmd.AddCommand(deleteVMCmd)
 
-	// Local flags which will only run when this command
-	deleteVMCmd.Flags().StringP("name", "n", "", "name of the object")
+	deleteVMCmd.Flags().StringP("name", "n", "", "name of the VM")
 	deleteVMCmd.MarkFlagRequired("name")
 }

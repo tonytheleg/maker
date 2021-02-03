@@ -8,15 +8,9 @@ import (
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "gets the status of the specified object on the specified platform",
-	Long: `Provides basic information about objects on the cloud provider specificed:
-
-Example: maker status vm [flags]`,
+	Long:  `Provides basic information about objects on the cloud provider specified`,
 }
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
-	// adds the "vm" subcommand (maker status vm)
-	//statusCmd.AddCommand(statusVMCmd)
-	//statusCmd.AddCommand(statusBucketCmd)
-	//statusCmd.AddCommand(statusClusterCmd)
 }

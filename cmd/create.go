@@ -8,15 +8,9 @@ import (
 var createCmd = &cobra.Command{
 	Use:   "create [object]",
 	Short: "creates the specified object on the specified platform",
-	Long: `Used to create various objects on the cloud provider specificed:
-
-Example: maker create vm [flags]`,
+	Long:  `Used to create various objects on the cloud provider specified`,
 }
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	// adds the "vm" subcommand (maker create vm)
-	//createCmd.AddCommand(createVMCmd)
-	//createCmd.AddCommand(createBucketCmd)
-	//createCmd.AddCommand(createClusterCmd)
 }

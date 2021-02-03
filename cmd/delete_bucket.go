@@ -12,12 +12,10 @@ import (
 
 // deleteBucketCmd represents the deleteBucket command
 var deleteBucketCmd = &cobra.Command{
-	Use:   "bucket",
-	Short: "deletes a storage bucket",
-	Long: `Used to delete a storage bucket on the specified provider:
-	
-Example: 
-  maker delete bucket -p PROVIDER -n BUCKET-NAME`,
+	Use:     "bucket",
+	Short:   "deletes a storage bucket",
+	Long:    `Used to delete a storage bucket on the specified provider`,
+	Example: "maker delete bucket --provider {do|aws|gcp} --name BUCKET-NAME",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 
@@ -59,8 +57,6 @@ Example:
 
 			err = gcp.DeleteStorageBucket(client, name, gcpProject)
 			utils.HandleErr("Failed to create Storage bucket:", err)
-		case "azure":
-			fmt.Println("azure")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -70,7 +66,6 @@ Example:
 func init() {
 	deleteCmd.AddCommand(deleteBucketCmd)
 
-	// Local flags which will only run when this command
-	deleteBucketCmd.Flags().StringP("name", "n", "", "name of the object")
+	deleteBucketCmd.Flags().StringP("name", "n", "", "name of the bucket")
 	deleteBucketCmd.MarkFlagRequired("name")
 }

@@ -14,11 +14,9 @@ import (
 var createVMCmd = &cobra.Command{
 	Use:   "vm",
 	Short: "creates a VM",
-	Long: `Used to create a VM object on the specified provider:
-
-Example: 
-  maker create vm --provider PROVIDER --size SIZE --image IMAGE-NAME --name NAME
-  Sizes and Image names are provider specific! GCP requires images in 'project/image-name' format`,
+	Long: `Used to create a VM object on the specified provider
+Sizes and Image names are provider specific! GCP requires images in 'project/image-name' format`,
+	Example: "maker create vm --provider {do|aws|gcp} --size SIZE --image IMAGE-NAME --name NAME",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
 		size, _ := cmd.Flags().GetString("size")
@@ -54,8 +52,6 @@ Example:
 
 			err = gcp.CreateGceInstance(service, name, gcpProject, defaultZone, size, image)
 			utils.HandleErr("Failed to create GCE instance:", err)
-		case "azure":
-			fmt.Println("azure called")
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -66,10 +62,10 @@ func init() {
 	createCmd.AddCommand(createVMCmd)
 
 	// Local flags which will only run when this command
-	createVMCmd.Flags().StringP("name", "n", "", "name of the object")
+	createVMCmd.Flags().StringP("name", "n", "", "name of the VM")
 	createVMCmd.MarkFlagRequired("name")
-	createVMCmd.Flags().StringP("size", "s", "", "sets the size of the object")
+	createVMCmd.Flags().StringP("size", "s", "", "sets the VM size/Instance type")
 	createVMCmd.MarkFlagRequired("size")
-	createVMCmd.Flags().StringP("image", "i", "", "sets the image type/slug")
+	createVMCmd.Flags().StringP("image", "i", "", "sets the OS/Disk Image to use")
 	createVMCmd.MarkFlagRequired("image")
 }
