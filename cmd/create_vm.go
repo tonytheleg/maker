@@ -63,7 +63,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(createVMCmd)
+	createCmd.AddCommand(createVMCmd)
 
 	// Local flags which will only run when this command
 	createVMCmd.Flags().StringP("name", "n", "", "name of the object")

@@ -62,7 +62,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(statusVMCmd)
+	statusCmd.AddCommand(statusVMCmd)
 
 	// Local flags which will only run when this command
 	statusVMCmd.Flags().StringP("name", "n", "", "name of the object")

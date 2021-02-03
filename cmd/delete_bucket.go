@@ -68,7 +68,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(deleteBucketCmd)
+	deleteCmd.AddCommand(deleteBucketCmd)
 
 	// Local flags which will only run when this command
 	deleteBucketCmd.Flags().StringP("name", "n", "", "name of the object")

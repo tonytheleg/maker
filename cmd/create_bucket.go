@@ -59,7 +59,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(createBucketCmd)
+	createCmd.AddCommand(createBucketCmd)
 
 	// Local flags which will only run when this command
 	createBucketCmd.Flags().StringP("name", "n", "", "name of the object")

@@ -68,7 +68,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(deleteVMCmd)
+	deleteCmd.AddCommand(deleteVMCmd)
 
 	// Local flags which will only run when this command
 	deleteVMCmd.Flags().StringP("name", "n", "", "name of the object")

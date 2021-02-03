@@ -16,6 +16,7 @@ Example: maker create vm [flags]`,
 func init() {
 	rootCmd.AddCommand(createCmd)
 	// adds the "vm" subcommand (maker create vm)
-	createCmd.AddCommand(createVMCmd)
-	createCmd.AddCommand(createBucketCmd)
+	//createCmd.AddCommand(createVMCmd)
+	//createCmd.AddCommand(createBucketCmd)
+	//createCmd.AddCommand(createClusterCmd)
 }

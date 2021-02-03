@@ -16,6 +16,7 @@ Example: maker status vm [flags]`,
 func init() {
 	rootCmd.AddCommand(statusCmd)
 	// adds the "vm" subcommand (maker status vm)
-	statusCmd.AddCommand(statusVMCmd)
-	statusCmd.AddCommand(statusBucketCmd)
+	//statusCmd.AddCommand(statusVMCmd)
+	//statusCmd.AddCommand(statusBucketCmd)
+	//statusCmd.AddCommand(statusClusterCmd)
 }
