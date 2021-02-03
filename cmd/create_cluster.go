@@ -23,29 +23,37 @@ import (
 
 // createClusterCmd represents the createCluster command
 var createClusterCmd = &cobra.Command{
-	Use:   "cluster",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:     "cluster",
+	Short:   "creates a Kubernetes cluster",
+	Long:    `Used to create a Kubernetes cluster on the specified provider`,
+	Example: "maker create cluster --provider {do|aws|gcp} --size SIZE --name CLUSTER-NAME",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("createCluster called")
+		name, _ := cmd.Flags().GetString("name")
+		nodeSize, _ := cmd.Flags().GetString("node-size")
+		nodeCount, _ := cmd.Flags().GetInt("node-count")
+		version, _ := cmd.Flags().GetString("version")
+
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
+			fmt.Println("create cluster do called", name, nodeSize, nodeCount, version)
+		case "aws":
+			fmt.Println("create cluster aws called", name, nodeSize, nodeCount, version)
+		case "gcp":
+			fmt.Println("create cluster gcp called", name, nodeSize, nodeCount, version)
+		default:
+			fmt.Printf("Unknown Provder -- %s", provider)
+		}
 	},
 }
 
 func init() {
 	createCmd.AddCommand(createClusterCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createClusterCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createClusterCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	createClusterCmd.Flags().StringP("name", "n", "", "name of the cluster")
+	createClusterCmd.MarkFlagRequired("name")
+	createClusterCmd.Flags().StringP("node-size", "s", "", "sets the node VM size/Instance type")
+	createClusterCmd.MarkFlagRequired("node-size")
+	createClusterCmd.Flags().IntP("node-count", "c", 1, "sets the node pool size (default 1)")
+	createClusterCmd.Flags().StringP("version", "v", "", "sets the Kubernetes/Vendor version")
+	createClusterCmd.MarkFlagRequired("version")
 }
