@@ -17,6 +17,8 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -35,7 +37,15 @@ var createClusterCmd = &cobra.Command{
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			fmt.Println("create cluster do called", name, nodeSize, nodeCount, version)
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			patToken, defaultRegion := config.PatToken, config.DefaultRegion
+			client := do.CreateDoClient(patToken, defaultRegion)
+			utils.HandleErr("Failed to authenticate:", err)
+
+			err = do.CreateDoCluster(client, name, defaultRegion, nodeSize, version, nodeCount)
+			utils.HandleErr("Failed to create cluster:", err)
 		case "aws":
 			fmt.Println("create cluster aws called", name, nodeSize, nodeCount, version)
 		case "gcp":
