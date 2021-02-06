@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 // HandleErr handles error checking and exiting upon failures
@@ -18,3 +19,6 @@ var HomeDir, _ = os.UserHomeDir()
 
 // ConfigFolder is the name of Makers config folder stored in Home
 var ConfigFolder = ".maker"
+
+// ConfigFolderPath is the full path to the .maker directory
+var ConfigFolderPath = filepath.Join(HomeDir, ConfigFolder)

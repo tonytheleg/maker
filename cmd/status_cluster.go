@@ -1,51 +1,47 @@
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
 
 // statusClusterCmd represents the statusCluster command
 var statusClusterCmd = &cobra.Command{
-	Use:   "cluster",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:     "cluster",
+	Short:   "gets the status of a Kubernetes cluster",
+	Long:    `Used to fetch information about a Kubernetes clusters on the specified provider`,
+	Example: "maker status cluster --provider {do|aws|gcp} --name CLUSTER-NAME",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("statusCluster called")
+		name, _ := cmd.Flags().GetString("name")
+
+		switch provider, _ := cmd.Flags().GetString("provider"); provider {
+		case "do":
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			patToken, defaultRegion := config.PatToken, config.DefaultRegion
+			client := do.CreateDoClient(patToken, defaultRegion)
+			utils.HandleErr("Failed to authenticate:", err)
+
+			clusterID, err := do.GetDoCluster(client, name)
+			do.PrintClusterStatus(client, clusterID)
+			utils.HandleErr("Failed to create cluster:", err)
+		case "aws":
+			fmt.Println("create cluster aws called", name)
+		case "gcp":
+			fmt.Println("create cluster gcp called", name)
+		default:
+			fmt.Printf("Unknown Provder -- %s", provider)
+		}
 	},
 }
 
 func init() {
 	statusCmd.AddCommand(statusClusterCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// statusClusterCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// statusClusterCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	statusClusterCmd.Flags().StringP("name", "n", "", "name of the cluster")
+	statusClusterCmd.MarkFlagRequired("name")
 }
