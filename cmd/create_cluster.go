@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -36,7 +37,18 @@ var createClusterCmd = &cobra.Command{
 			utils.HandleErr("Failed to create cluster:", err)
 
 		case "aws":
-			fmt.Println("create cluster aws called", name, nodeSize, nodeCount, version)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to setup AWS Session:", err)
+
+			arn, err := aws.GetExistingRoleARN(session)
+			fmt.Println(arn)
+			if arn == "" {
+				arn, err = aws.CreateEksClusterRole(session)
+				utils.HandleErr("Failed to create EKS service linked role:", err)
+			}
 		case "gcp":
 			fmt.Println("create cluster gcp called", name, nodeSize, nodeCount, version)
 		default:

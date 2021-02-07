@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateS3Sessions creates a session to connect to AWS
+// CreateS3Client creates a session to connect to AWS
 func CreateS3Client(credentialsFile, defaultRegion string) (*s3.S3, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(defaultRegion),
