@@ -37,6 +37,7 @@ var createClusterCmd = &cobra.Command{
 			utils.HandleErr("Failed to create cluster:", err)
 
 		case "aws":
+			subnets, _ := cmd.Flags().GetStringSlice("subnets")
 			defaultRegion, err := aws.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
 
@@ -49,6 +50,8 @@ var createClusterCmd = &cobra.Command{
 				arn, err = aws.CreateEksClusterRole(session)
 				utils.HandleErr("Failed to create EKS service linked role:", err)
 			}
+			err = aws.CreateEksCluster(session, name, arn, subnets)
+			utils.HandleErr("Failed to create EKS cluster:", err)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name, nodeSize, nodeCount, version)
 		default:
@@ -67,4 +70,5 @@ func init() {
 	createClusterCmd.Flags().IntP("node-count", "c", 2, "sets the node pool size (default 1)")
 	createClusterCmd.Flags().StringP("version", "v", "", "sets the Kubernetes/Vendor version")
 	createClusterCmd.MarkFlagRequired("version")
+	createClusterCmd.Flags().StringSliceP("subnets", "b", nil, "comma separated list of 2 subnets to deploy to")
 }
