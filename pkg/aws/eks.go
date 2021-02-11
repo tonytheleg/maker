@@ -39,7 +39,7 @@ func GetExistingRoleARN(sess *session.Session) (string, error) {
 
 // CreateEksClusterRole does stuff
 func CreateEksClusterRole(sess *session.Session) (string, error) {
-	policy := "{'Version':'2012-10-17','Statement':[{'Effect':'Allow','Action':['autoscaling:DescribeAutoScalingGroups','autoscaling:UpdateAutoScalingGroup','ec2:AttachVolume','ec2:AuthorizeSecurityGroupIngress','ec2:CreateRoute','ec2:CreateSecurityGroup','ec2:CreateTags','ec2:CreateVolume','ec2:DeleteRoute','ec2:DeleteSecurityGroup','ec2:DeleteVolume','ec2:DescribeInstances','ec2:DescribeRouteTables','ec2:DescribeSecurityGroups','ec2:DescribeSubnets','ec2:DescribeVolumes','ec2:DescribeVolumesModifications','ec2:DescribeVpcs','ec2:DescribeDhcpOptions','ec2:DescribeNetworkInterfaces','ec2:DetachVolume','ec2:ModifyInstanceAttribute','ec2:ModifyVolume','ec2:RevokeSecurityGroupIngress','elasticloadbalancing:AddTags','elasticloadbalancing:ApplySecurityGroupsToLoadBalancer','elasticloadbalancing:AttachLoadBalancerToSubnets','elasticloadbalancing:ConfigureHealthCheck','elasticloadbalancing:CreateListener','elasticloadbalancing:CreateLoadBalancer','elasticloadbalancing:CreateLoadBalancerListeners','elasticloadbalancing:CreateLoadBalancerPolicy','elasticloadbalancing:CreateTargetGroup','elasticloadbalancing:DeleteListener','elasticloadbalancing:DeleteLoadBalancer','elasticloadbalancing:DeleteLoadBalancerListeners','elasticloadbalancing:DeleteTargetGroup','elasticloadbalancing:DeregisterInstancesFromLoadBalancer','elasticloadbalancing:DeregisterTargets','elasticloadbalancing:DescribeListeners','elasticloadbalancing:DescribeLoadBalancerAttributes','elasticloadbalancing:DescribeLoadBalancerPolicies','elasticloadbalancing:DescribeLoadBalancers','elasticloadbalancing:DescribeTargetGroupAttributes','elasticloadbalancing:DescribeTargetGroups','elasticloadbalancing:DescribeTargetHealth','elasticloadbalancing:DetachLoadBalancerFromSubnets','elasticloadbalancing:ModifyListener','elasticloadbalancing:ModifyLoadBalancerAttributes','elasticloadbalancing:ModifyTargetGroup','elasticloadbalancing:ModifyTargetGroupAttributes','elasticloadbalancing:RegisterInstancesWithLoadBalancer','elasticloadbalancing:RegisterTargets','elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer','elasticloadbalancing:SetLoadBalancerPoliciesOfListener','kms:DescribeKey'],'Resource':'*'},{'Effect':'Allow','Action':'iam:CreateServiceLinkedRole','Resource':'*','Condition':{'StringLike':{'iam:AWSServiceName':'elasticloadbalancing.amazonaws.com'}}}]}"
+	policy := `{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Principal": { "AWS": "arn:aws:iam::898425707596:root" }, "Action": "sts:AssumeRole" }]}`
 
 	rolesvc := iam.New(sess)
 	roleInput := &iam.CreateRoleInput{
@@ -50,14 +50,14 @@ func CreateEksClusterRole(sess *session.Session) (string, error) {
 
 	roleResult, err := rolesvc.CreateRole(roleInput)
 	if err != nil {
-		return "", errors.Errorf("Failed to create service linked role", err)
+		return "", errors.Errorf("Failed to create role", err)
 	}
 
 	// add policy
 	policysvc := iam.New(sess)
 	policyInput := &iam.AttachRolePolicyInput{
 		PolicyArn: aws.String("arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"),
-		RoleName:  aws.String("AWSServiceRoleForAmazonEKS"),
+		RoleName:  aws.String("EKSClusterRole"),
 	}
 
 	_, err = policysvc.AttachRolePolicy(policyInput)
@@ -115,6 +115,9 @@ func CreateEksCluster(sess *session.Session, name, arn string, subnets []string)
 	}
 	fmt.Println(result)
 	return nil
+
+	// Need to create a node group still
+	// look into Node IAM Role
 }
 
 // GetClusterID fetches the EKS cluster ID for status or deleting
@@ -126,6 +129,50 @@ func GetClusterID() {
 func PrintEksClusterStatus() {
 
 }
+
+// GetEksKubeconfig creates a kubeconfig needed to access the cluster
+func GetEksKubeconfig() {
+/* Kubeconfig
+https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
+Replace the <endpoint-url> with the endpoint URL that was created for your cluster.
+
+Replace the <base64-encoded-ca-cert> with the certificateAuthority.data that was created for your cluster.
+
+Replace the <cluster-name> with your cluster name.
+*Get this info from describe cluster output
+
+	apiVersion: v1
+clusters:
+- cluster:
+    server: <endpoint-url>
+    certificate-authority-data: <base64-encoded-ca-cert>
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: aws
+  name: aws
+current-context: aws
+kind: Config
+preferences: {}
+users:
+- name: aws
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      command: aws
+      args:
+        - "eks"
+        - "get-token"
+        - "--cluster-name"
+        - "<cluster-name>"
+        # - "--role"
+        # - "<role-arn>"
+      # env:
+        # - name: AWS_PROFILE
+        #   value: "<aws-profile>"
+}
+*/
 
 // DeleteEksCluster destroys an EKS cluster
 func DeleteEksCluster() {
