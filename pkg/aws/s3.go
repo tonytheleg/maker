@@ -77,27 +77,26 @@ func DeleteS3Objects(client *s3.S3, name string) error {
 
 	if confirmation != "y" {
 		return errors.Errorf("Cannot proceed -- must delete files before deleting bucket")
-	} else {
-		// loop through all objects in bucket and delete first
-		listInput := &s3.ListObjectsInput{Bucket: aws.String(name)}
-		objects, err := client.ListObjects(listInput)
-		if err != nil {
-			return errors.Errorf("Failed to fetch objects in bucket:", err)
-		}
-
-		for _, obj := range objects.Contents {
-			input := &s3.DeleteObjectInput{
-				Bucket: aws.String(name),
-				Key:    aws.String(aws.StringValue(obj.Key)),
-			}
-
-			_, err := client.DeleteObject(input)
-			if err != nil {
-				return errors.Errorf("Failed to remove objects in bucket:", err)
-			}
-		}
-		fmt.Println("All objects from", name, "deleted")
 	}
+	// loop through all objects in bucket and delete first
+	listInput := &s3.ListObjectsInput{Bucket: aws.String(name)}
+	objects, err := client.ListObjects(listInput)
+	if err != nil {
+		return errors.Errorf("Failed to fetch objects in bucket:", err)
+	}
+
+	for _, obj := range objects.Contents {
+		input := &s3.DeleteObjectInput{
+			Bucket: aws.String(name),
+			Key:    aws.String(aws.StringValue(obj.Key)),
+		}
+
+		_, err := client.DeleteObject(input)
+		if err != nil {
+			return errors.Errorf("Failed to remove objects in bucket:", err)
+		}
+	}
+	fmt.Println("All objects from", name, "deleted")
 	return nil
 }
 

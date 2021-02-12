@@ -50,7 +50,6 @@ var createClusterCmd = &cobra.Command{
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			arn, err := aws.GetExistingRoleARN(session)
-			fmt.Println(arn)
 			if arn == "" {
 				arn, err = aws.CreateEksClusterRole(session)
 				utils.HandleErr("Failed to create EKS service linked role:", err)
