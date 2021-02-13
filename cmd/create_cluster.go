@@ -56,6 +56,9 @@ var createClusterCmd = &cobra.Command{
 			}
 			err = aws.CreateEksCluster(session, name, arn, subnets)
 			utils.HandleErr("Failed to create EKS cluster:", err)
+
+			err = aws.CreateEksNodeGroup(session, name, nodeSize, nodeCount, subnets)
+			utils.HandleErr("Failed to create EKS node group:", err)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name, nodeSize, nodeCount, version)
 		default:

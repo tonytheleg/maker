@@ -1,4 +1,4 @@
-# Maker
+# Maker - a 100DaysOfCode Project
 
 ### noun 
 

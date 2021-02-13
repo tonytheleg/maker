@@ -3,9 +3,9 @@ package aws
 import (
 	"crypto/md5"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -21,18 +21,7 @@ func GetExistingRoleARN(sess *session.Session) (string, error) {
 
 	eksArn, err := svc.GetRole(roleInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case iam.ErrCodeNoSuchEntityException:
-				return "", errors.Errorf("Failed", iam.ErrCodeNoSuchEntityException, aerr.Error())
-			case iam.ErrCodeServiceFailureException:
-				return "", errors.Errorf("Failed", iam.ErrCodeServiceFailureException, aerr.Error())
-			default:
-				return "", errors.Errorf("Failed", err)
-			}
-		} else {
-			return "", errors.Errorf("Failed", err)
-		}
+		return "", errors.Errorf("Failed", err)
 	}
 	return string(*eksArn.Role.Arn), nil
 }
@@ -62,7 +51,7 @@ func CreateEksClusterRole(sess *session.Session) (string, error) {
 		},
 		{
 			PolicyArn: aws.String("arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"),
-			RoleName:  aws.String("EKSClusteEKSClusterRolerRoleTwo"),
+			RoleName:  aws.String("EKSClusterRole"),
 		},
 		{
 			PolicyArn: aws.String("arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"),
@@ -98,39 +87,47 @@ func CreateEksCluster(sess *session.Session, name, arn string, subnets []string)
 		RoleArn: aws.String(arn),
 	}
 
-	result, err := svc.CreateCluster(input)
+	_, err := svc.CreateCluster(input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case eks.ErrCodeResourceInUseException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeResourceInUseException, aerr.Error())
-			case eks.ErrCodeResourceLimitExceededException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeResourceLimitExceededException, aerr.Error())
-			case eks.ErrCodeInvalidParameterException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeInvalidParameterException, aerr.Error())
-			case eks.ErrCodeClientException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeClientException, aerr.Error())
-			case eks.ErrCodeServerException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeServerException, aerr.Error())
-			case eks.ErrCodeServiceUnavailableException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeServiceUnavailableException, aerr.Error())
-			case eks.ErrCodeUnsupportedAvailabilityZoneException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeUnsupportedAvailabilityZoneException, aerr.Error())
-			default:
-				return errors.Errorf("Failed to create cluster:", aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			return errors.Errorf("Failed to create cluser:", err)
-		}
+		return errors.Errorf("Failed to create cluser:", err)
 	}
-	fmt.Println(result)
+	fmt.Println("Creating", name, "cluster. This can take up to 10-15 minutes...")
 	return nil
 }
 
+// GetDeployStatus checks the state of the EKS Cluster before creating a node group
+func GetDeployStatus(sess *session.Session, name string) (string, error) {
+	svc := eks.New(sess)
+	input := &eks.DescribeClusterInput{
+		Name: aws.String(name),
+	}
+
+	result, err := svc.DescribeCluster(input)
+	if err != nil {
+		return "", errors.Errorf("Failed to fetch cluster status:", err)
+	}
+	return *result.Cluster.Status, nil
+}
+
 // CreateEksNodeGroup creates workers for the EKS cluster just created
-func CreateEksNodeGroup(sess *session.Session, name, arn string, nodeCount int, subnets []string) error {
+func CreateEksNodeGroup(sess *session.Session, name, nodeSize string, nodeCount int, subnets []string) error {
+	// pre-check
+
+	for {
+		if status, err := GetDeployStatus(sess, name); status != "FAILED" {
+			if err != nil {
+				return errors.Errorf("Failed to get cluster status to create node group:", err)
+			}
+			if status == "ACTIVE" {
+				fmt.Println("Cluster completed!")
+				fmt.Println("Current status:", status)
+				break
+			}
+			fmt.Println("Waiting for cluster completion to create node group -- Current status:", status)
+			time.Sleep(1 * time.Minute)
+		}
+	}
+
 	digest := md5.New()
 	digest.Write([]byte(name))
 	hash := digest.Sum(nil)
@@ -140,7 +137,7 @@ func CreateEksNodeGroup(sess *session.Session, name, arn string, nodeCount int, 
 		CapacityType:       aws.String("On-Demand"),
 		ClientRequestToken: aws.String(name + "-nodegroup-" + string(hash)),
 		ClusterName:        aws.String(name),
-		InstanceTypes:      aws.StringSlice([]string{"t3.micro"}),
+		InstanceTypes:      aws.StringSlice([]string{nodeSize}),
 		NodeRole:           aws.String("EKSClusterRole"),
 		NodegroupName:      aws.String(name + "-nodegroups"),
 		ScalingConfig: &eks.NodegroupScalingConfig{
@@ -153,43 +150,33 @@ func CreateEksNodeGroup(sess *session.Session, name, arn string, nodeCount int, 
 
 	result, err := svc.CreateNodegroup(input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case eks.ErrCodeResourceInUseException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeResourceInUseException, aerr.Error())
-			case eks.ErrCodeResourceLimitExceededException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeResourceLimitExceededException, aerr.Error())
-			case eks.ErrCodeInvalidParameterException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeInvalidParameterException, aerr.Error())
-			case eks.ErrCodeClientException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeClientException, aerr.Error())
-			case eks.ErrCodeServerException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeServerException, aerr.Error())
-			case eks.ErrCodeServiceUnavailableException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeServiceUnavailableException, aerr.Error())
-			case eks.ErrCodeUnsupportedAvailabilityZoneException:
-				return errors.Errorf("Failed to create cluster:", eks.ErrCodeUnsupportedAvailabilityZoneException, aerr.Error())
-			default:
-				return errors.Errorf("Failed to create cluster:", aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			return errors.Errorf("Failed to create cluser:", err)
-		}
+		return errors.Errorf("Failed to create cluser:", err)
 	}
 	fmt.Println(result)
 	return nil
 }
 
-// GetClusterID fetches the EKS cluster ID for status or deleting
-func GetClusterID() {
-
-}
-
 // PrintEksClusterStatus outputs EKS cluster info
-func PrintEksClusterStatus() {
+func PrintEksClusterStatus(sess *session.Session, name string) error {
+	svc := eks.New(sess)
+	input := &eks.DescribeClusterInput{
+		Name: aws.String(name),
+	}
 
+	result, err := svc.DescribeCluster(input)
+	if err != nil {
+		return errors.Errorf("Failed to fetch cluster status:", err)
+	}
+
+	fmt.Printf("\nName: %s\nARN: %s\n\nEndpoint: %s\nService IP: %s\n\nVersion: %s\nCreated: %s\n\n",
+		*result.Cluster.Name,
+		*result.Cluster.Arn,
+		*result.Cluster.Endpoint,
+		*result.Cluster.KubernetesNetworkConfig.ServiceIpv4Cidr,
+		*result.Cluster.Version,
+		*result.Cluster.CreatedAt,
+	)
+	return nil
 }
 
 // GetEksKubeconfig creates a kubeconfig needed to access the cluster
