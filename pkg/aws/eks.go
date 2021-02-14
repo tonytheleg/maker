@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -110,7 +111,7 @@ func GetDeployStatus(sess *session.Session, name string) (string, error) {
 }
 
 // CreateEksNodeGroup creates workers for the EKS cluster just created
-func CreateEksNodeGroup(sess *session.Session, name, nodeSize string, nodeCount int, subnets []string) error {
+func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeCount int, subnets []string) error {
 	// pre-check
 
 	for {
@@ -138,8 +139,8 @@ func CreateEksNodeGroup(sess *session.Session, name, nodeSize string, nodeCount 
 		ClientRequestToken: aws.String(name + "-nodegroup-" + string(hash)),
 		ClusterName:        aws.String(name),
 		InstanceTypes:      aws.StringSlice([]string{nodeSize}),
-		NodeRole:           aws.String("EKSClusterRole"),
-		NodegroupName:      aws.String(name + "-nodegroups"),
+		NodeRole:           aws.String(arn),
+		NodegroupName:      aws.String(name + "-nodegroup"),
 		ScalingConfig: &eks.NodegroupScalingConfig{
 			DesiredSize: aws.Int64(int64(nodeCount)),
 			MaxSize:     aws.Int64(int64(nodeCount)),
@@ -168,13 +169,14 @@ func PrintEksClusterStatus(sess *session.Session, name string) error {
 		return errors.Errorf("Failed to fetch cluster status:", err)
 	}
 
-	fmt.Printf("\nName: %s\nARN: %s\n\nEndpoint: %s\nService IP: %s\n\nVersion: %s\nCreated: %s\n\n",
+	fmt.Printf("\nName: %s\nARN: %s\n\nEndpoint: %s\nService IP: %s\n\nVersion: %s\nCreated: %s\nState: %s\n",
 		*result.Cluster.Name,
 		*result.Cluster.Arn,
 		*result.Cluster.Endpoint,
 		*result.Cluster.KubernetesNetworkConfig.ServiceIpv4Cidr,
 		*result.Cluster.Version,
 		*result.Cluster.CreatedAt,
+		*result.Cluster.Status,
 	)
 	return nil
 }
@@ -269,11 +271,64 @@ func GetEksKubeconfig() {
 }
 
 // DeleteEksCluster destroys an EKS cluster
-func DeleteEksCluster() {
+func DeleteEksCluster(sess *session.Session, name string) error {
+	svc := eks.New(sess)
+	input := &eks.DeleteClusterInput{
+		Name: aws.String(name),
+	}
 
+	_, err := svc.DeleteCluster(input)
+	if err != nil {
+		return errors.Errorf("Failed to delete the cluster:", err)
+	}
+	fmt.Println("Cluster", name, "deleted")
+	return nil
+}
+
+// DeleteEksNodeGroup deletes the node group before deleting the cluster
+func DeleteEksNodeGroup(sess *session.Session, clusterName, nodeGroupName string) error {
+	svc := eks.New(sess)
+	input := &eks.DeleteNodegroupInput{
+		ClusterName:   aws.String(clusterName),
+		NodegroupName: aws.String(nodeGroupName),
+	}
+
+	_, err := svc.DeleteNodegroup(input)
+	if err != nil {
+		return errors.Errorf("Failed to delete the cluster:", err)
+	}
+	fmt.Println("Node group", nodeGroupName, "deleted")
+	return nil
 }
 
 // DeleteEksClusterRole removes the service role used for EKS
-func DeleteEksClusterRole() {
+func DeleteEksClusterRole(sess *session.Session, name string) error {
+	// pre-check
+	for {
+		if status, err := GetDeployStatus(sess, name); status != "DELETING" {
+			if err != nil {
+				aerr := err.(awserr.Error)
+				if aerr.Code() == eks.ErrCodeResourceNotFoundException {
+					fmt.Println("Cluster", name, "does not exist or is deleted")
+					err = nil
+					break
+				}
+			}
+		} else {
+			fmt.Println("Waiting for cluster to finish deleting -- Current status:", status)
+			time.Sleep(1 * time.Minute)
+		}
+	}
 
+	svc := iam.New(sess)
+	input := &iam.DeleteRoleInput{
+		RoleName: aws.String(name),
+	}
+
+	_, err := svc.DeleteRole(input)
+	if err != nil {
+		return errors.Errorf("Failed to delete the IAM role:", err)
+	}
+	fmt.Println("IAM role", name, "removed")
+	return nil
 }

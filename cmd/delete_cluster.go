@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -29,7 +30,14 @@ var deleteClusterCmd = &cobra.Command{
 			clusterID, err := do.GetDoCluster(client, name)
 			err = do.DeleteDoCluster(client, clusterID, name)
 		case "aws":
-			fmt.Println("create cluster aws called", name)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to setup AWS Session:", err)
+
+			err = aws.DeleteEksCluster(session, name)
+			utils.HandleErr("Failed to delete the cluster", err)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name)
 		default:
