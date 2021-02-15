@@ -36,7 +36,10 @@ var deleteClusterCmd = &cobra.Command{
 			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
-			err = aws.DeleteEksCluster(session, name)
+			err = aws.DeleteEksNodeGroup(session, name, name+"-nodegroup")
+			utils.HandleErr("Failed to delete the node group:", err)
+
+			err = aws.DeleteEksCluster(session, name, name+"-nodegroup")
 			utils.HandleErr("Failed to delete the cluster", err)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name)
