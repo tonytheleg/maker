@@ -57,6 +57,10 @@ func CreateEksClusterRole(sess *session.Session) (string, error) {
 			PolicyArn: aws.String("arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"),
 			RoleName:  aws.String("EKSClusterRole"),
 		},
+		{
+			PolicyArn: aws.String("arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"),
+			RoleName:  aws.String("EKSClusterRole"),
+		},
 	}
 
 	for _, policyInput := range policies {
@@ -138,7 +142,7 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 	if err != nil {
 		return errors.Errorf("Failed to create cluser:", err)
 	}
-	fmt.Println("Node group", input.NodegroupName, "creating")
+	fmt.Println("Node group", *input.NodegroupName, "creating")
 	return nil
 }
 
@@ -215,23 +219,22 @@ func DeleteEksNodeGroup(sess *session.Session, clusterName, nodeGroupName string
 func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 	// pre-check
 	for {
-		if status, err := GetNodeGroupStatus(sess, name, nodeGroupName); status != "DELETING" {
-			if err != nil {
-				if aerr, ok := err.(awserr.Error); ok {
-					fmt.Println("err is:", err)
-					fmt.Println("aerr is:", aerr)
-					fmt.Println("aerrCode is:", aerr.Code())
-					if aerr.Code() == "ResourceNotFoundException" {
-						fmt.Println("Cluster", name, "does not exist or is deleted")
-						err = nil
-						break
-					}
-				}
+		status, err := GetNodeGroupStatus(sess, name, nodeGroupName)
+		fmt.Println("GetNodeGroupStatus Called")
+		fmt.Println("Status:", status)
+		fmt.Println("Error:", err)
+		if err != nil {
+			if aerr, ok := err.(awserr.Error); ok {
+				fmt.Println("err is:", err)
+				fmt.Println("aerr is:", aerr)
+				fmt.Println("aerrCode is:", aerr.Code())
+				break
 			}
-		} else {
-			fmt.Println("Waiting for nodes to finish deleting -- Current status:", status)
-			time.Sleep(1 * time.Minute)
+			break
 		}
+		// WE HAVE A LOOP PROBLEM HERE
+		fmt.Println("Waiting for nodes to finish deleting -- Current status:", status)
+		time.Sleep(1 * time.Minute)
 	}
 
 	svc := eks.New(sess)
