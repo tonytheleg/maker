@@ -251,7 +251,7 @@ func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 }
 
 // GetEksKubeconfig creates a kubeconfig needed to access the cluster
-func GetEksKubeconfig() {
+func GetEksKubeconfig(sess *session.Session, name string) {
 	/* Kubeconfig
 	   https://pkg.go.dev/k8s.io/kops@v1.19.0/pkg/kubeconfig#KubeconfigBuilder
 	   https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
@@ -261,80 +261,68 @@ func GetEksKubeconfig() {
 
 	   Replace the <cluster-name> with your cluster name.
 	   *Get this info from describe cluster output
+	*/
 
-	   *apiVersion: v1
-	   clusters:
-	   - cluster:
-	       server: <endpoint-url>
-	       certificate-authority-data: <base64-encoded-ca-cert>
-	     name: kubernetes
-	   contexts:
-	   - context:
-	       cluster: kubernetes
-	       user: aws
-	     name: aws
-	   *current-context: aws
-	   *kind: Config
-	   preferences: {}
-	   users:
-	   - name: aws
-	     user:
-	       exec:
-	         apiVersion: client.authentication.k8s.io/v1alpha1
-	         command: aws
-	         args:
-	           - "eks"
-	           - "get-token"
-	           - "--cluster-name"
-	           - "<cluster-name>"
-	           # - "--role"
-	           # - "<role-arn>"
-	         # env:
-	           # - name: AWS_PROFILE
-	           #   value: "<aws-profile>"
-	   }
+	cluster := KubectlClusterWithName{
+		Name: name,
+		Cluster: KubectlCluster{
+			Server:                   "INSERT-ENDPOINT-HERE",
+			CertificateAuthorityData: "INSERT-CADATA-HERE",
+		},
+	}
 
-	   type KubectlConfig struct {
-	   	Kind           string                    `json:"kind"`
-	   	ApiVersion     string                    `json:"apiVersion"`
-	   	CurrentContext string                    `json:"current-context"`
-	   	Clusters       []*KubectlClusterWithName `json:"clusters"`
-	   	Contexts       []*KubectlContextWithName `json:"contexts"`
-	   	Users          []*KubectlUserWithName    `json:"users"`
-	   }
+	context := KubectlContextWithName{
+		Name: name,
+		Context: KubectlContext{
+			Cluster: name,
+			User:    "maker",
+		},
+	}
 
-	   type KubectlClusterWithName struct {
-	   	Name    string         `json:"name"`
-	   	Cluster KubectlCluster `json:"cluster"`
-	   }
+	user := KubectlUserWithName{
+		Name: "INSERT-NAME",
+		User: KubectlUser{},
+	}
 
-	   type KubectlCluster struct {
-	   	Server                   string `json:"server,omitempty"`
-	   	CertificateAuthorityData []byte `json:"certificate-authority-data,omitempty"`
-	   }
+	kubeConf := KubectlConfig{
+		Kind:           "Config",
+		APIVersion:     "v1",
+		CurrentContext: name,
+		Clusters:       cluster,
+		Contexts:       context,
+		Users:          "INSERT-USERS-OBJECT",
+	}
 
-	   type KubectlContextWithName struct {
-	   	Name    string         `json:"name"`
-	   	Context KubectlContext `json:"context"`
-	   }
-
-	   type KubectlContext struct {
-	   	Cluster string `json:"cluster"`
-	   	User    string `json:"user"`
-	   }
-
-	   type KubectlUserWithName struct {
-	   	Name string      `json:"name"`
-	   	User KubectlUser `json:"user"`
-	   }
-
-	   type KubectlUser struct {
-	   	ClientCertificateData []byte `json:"client-certificate-data,omitempty"`
-	   	ClientKeyData         []byte `json:"client-key-data,omitempty"`
-	   	Password              string `json:"password,omitempty"`
-	   	Username              string `json:"username,omitempty"`
-	   	Token                 string `json:"token,omitempty"`
-	   }
-
+	/*
+		   *apiVersion: v1
+		   clusters:
+		   - cluster:
+		       server: <endpoint-url>
+		       certificate-authority-data: <base64-encoded-ca-cert>
+		     name: kubernetes
+		   contexts:
+		   - context:
+		       cluster: kubernetes
+		       user: aws
+		     name: aws
+		   *current-context: aws
+		   *kind: Config
+		   preferences: {}
+		   users:
+		   - name: aws
+		     user:
+		       exec:
+		         apiVersion: client.authentication.k8s.io/v1alpha1
+		         command: aws
+		         args:
+		           - "eks"
+		           - "get-token"
+		           - "--cluster-name"
+		           - "<cluster-name>"
+		           # - "--role"
+		           # - "<role-arn>"
+		         # env:
+		           # - name: AWS_PROFILE
+				   #   value: "<aws-profile>"
 	*/
 }

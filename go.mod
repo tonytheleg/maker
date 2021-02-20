@@ -28,5 +28,6 @@ require (
 	google.golang.org/genproto v0.0.0-20210211154401-3a9a48ddfd6c // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
+	k8s.io/kubectl v0.20.4 // indirect
 
 )
