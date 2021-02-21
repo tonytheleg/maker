@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
@@ -39,6 +40,13 @@ var statusClusterCmd = &cobra.Command{
 
 			err = aws.PrintEksClusterStatus(session, name)
 			utils.HandleErr("Failed to create EKS cluster:", err)
+
+			result, err := aws.GetCluster(session, name)
+			clientset, err := aws.NewClientset(result.Cluster)
+			if err != nil {
+				log.Fatalf("Error creating clientset: %v", err)
+			}
+			fmt.Println(clientset)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name)
 		default:

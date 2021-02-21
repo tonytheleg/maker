@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -151,7 +150,20 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 	return nil
 }
 
-func newClientset(cluster *eks.Cluster) (*kubernetes.Clientset, error) {
+func GetCluster(sess *session.Session, name string) (*eks.DescribeClusterOutput, error) {
+	svc := eks.New(sess)
+	input := &eks.DescribeClusterInput{
+		Name: aws.String(name),
+	}
+
+	result, err := svc.DescribeCluster(input)
+	if err != nil {
+		return nil, errors.Errorf("Failed to fetch cluster status:", err)
+	}
+	return result, nil
+}
+
+func NewClientset(cluster *eks.Cluster) (*kubernetes.Clientset, error) {
 	gen, err := token.NewGenerator(true, false)
 	if err != nil {
 		return nil, err
@@ -280,32 +292,6 @@ func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 	}
 	fmt.Println("Cluster", name, "deleted")
 	return nil
-}
-
-func main() {
-	name := "wonderful-outfit-1583362361"
-	region := "us-east-2"
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(region),
-	}))
-	eksSvc := eks.New(sess)
-
-	input := &eks.DescribeClusterInput{
-		Name: aws.String(name),
-	}
-	result, err := eksSvc.DescribeCluster(input)
-	if err != nil {
-		log.Fatalf("Error calling DescribeCluster: %v", err)
-	}
-	clientset, err := newClientset(result.Cluster)
-	if err != nil {
-		log.Fatalf("Error creating clientset: %v", err)
-	}
-	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil {
-		log.Fatalf("Error getting EKS nodes: %v", err)
-	}
-	log.Printf("There are %d nodes associated with cluster %s", len(nodes.Items), name)
 }
 
 // GetEksKubeconfig creates a kubeconfig needed to access the cluster
