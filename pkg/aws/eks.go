@@ -2,7 +2,9 @@ package aws
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +13,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
 // GetExistingRoleARN checks if a role exists for AWSServiceRoleForAmazonEKS and returns its ARN
@@ -146,6 +151,37 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 	return nil
 }
 
+func newClientset(cluster *eks.Cluster) (*kubernetes.Clientset, error) {
+	gen, err := token.NewGenerator(true, false)
+	if err != nil {
+		return nil, err
+	}
+	opts := &token.GetTokenOptions{
+		ClusterID: aws.StringValue(cluster.Name),
+	}
+	tok, err := gen.GetWithOptions(opts)
+	if err != nil {
+		return nil, err
+	}
+	ca, err := base64.StdEncoding.DecodeString(aws.StringValue(cluster.CertificateAuthority.Data))
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(
+		&rest.Config{
+			Host:        aws.StringValue(cluster.Endpoint),
+			BearerToken: tok.Token,
+			TLSClientConfig: rest.TLSClientConfig{
+				CAData: ca,
+			},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return clientset, nil
+}
+
 // GetDeployStatus checks the state of the EKS Cluster before creating a node group
 func GetClusterStatus(sess *session.Session, name string) (string, error) {
 	svc := eks.New(sess)
@@ -220,9 +256,6 @@ func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 	// pre-check
 	for {
 		status, err := GetNodeGroupStatus(sess, name, nodeGroupName)
-		fmt.Println("GetNodeGroupStatus Called")
-		fmt.Println("Status:", status)
-		fmt.Println("Error:", err)
 		if err != nil {
 			if aerr, ok := err.(awserr.Error); ok {
 				fmt.Println("err is:", err)
@@ -232,7 +265,6 @@ func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 			}
 			break
 		}
-		// WE HAVE A LOOP PROBLEM HERE
 		fmt.Println("Waiting for nodes to finish deleting -- Current status:", status)
 		time.Sleep(1 * time.Minute)
 	}
@@ -250,6 +282,32 @@ func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 	return nil
 }
 
+func main() {
+	name := "wonderful-outfit-1583362361"
+	region := "us-east-2"
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(region),
+	}))
+	eksSvc := eks.New(sess)
+
+	input := &eks.DescribeClusterInput{
+		Name: aws.String(name),
+	}
+	result, err := eksSvc.DescribeCluster(input)
+	if err != nil {
+		log.Fatalf("Error calling DescribeCluster: %v", err)
+	}
+	clientset, err := newClientset(result.Cluster)
+	if err != nil {
+		log.Fatalf("Error creating clientset: %v", err)
+	}
+	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		log.Fatalf("Error getting EKS nodes: %v", err)
+	}
+	log.Printf("There are %d nodes associated with cluster %s", len(nodes.Items), name)
+}
+
 // GetEksKubeconfig creates a kubeconfig needed to access the cluster
 func GetEksKubeconfig(sess *session.Session, name string) {
 	/* Kubeconfig
@@ -262,37 +320,37 @@ func GetEksKubeconfig(sess *session.Session, name string) {
 	   Replace the <cluster-name> with your cluster name.
 	   *Get this info from describe cluster output
 	*/
+	/*
+		cluster := KubectlClusterWithName{
+			Name: name,
+			Cluster: KubectlCluster{
+				Server:                   "INSERT-ENDPOINT-HERE",
+				CertificateAuthorityData: "INSERT-CADATA-HERE",
+			},
+		}
 
-	cluster := KubectlClusterWithName{
-		Name: name,
-		Cluster: KubectlCluster{
-			Server:                   "INSERT-ENDPOINT-HERE",
-			CertificateAuthorityData: "INSERT-CADATA-HERE",
-		},
-	}
+		context := KubectlContextWithName{
+			Name: name,
+			Context: KubectlContext{
+				Cluster: name,
+				User:    "maker",
+			},
+		}
 
-	context := KubectlContextWithName{
-		Name: name,
-		Context: KubectlContext{
-			Cluster: name,
-			User:    "maker",
-		},
-	}
+		user := KubectlUserWithName{
+			Name: "INSERT-NAME",
+			User: KubectlUser{},
+		}
 
-	user := KubectlUserWithName{
-		Name: "INSERT-NAME",
-		User: KubectlUser{},
-	}
-
-	kubeConf := KubectlConfig{
-		Kind:           "Config",
-		APIVersion:     "v1",
-		CurrentContext: name,
-		Clusters:       cluster,
-		Contexts:       context,
-		Users:          "INSERT-USERS-OBJECT",
-	}
-
+		kubeConf := KubectlConfig{
+			Kind:           "Config",
+			APIVersion:     "v1",
+			CurrentContext: name,
+			Clusters:       cluster,
+			Contexts:       context,
+			Users:          "INSERT-USERS-OBJECT",
+		}
+	*/
 	/*
 		   *apiVersion: v1
 		   clusters:
