@@ -2,8 +2,9 @@ package aws
 
 import (
 	"crypto/md5"
-	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,9 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
 
 // GetExistingRoleARN checks if a role exists for AWSServiceRoleForAmazonEKS and returns its ARN
@@ -150,6 +148,42 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 	return nil
 }
 
+// CreateKubeconfig creates a kubeconfig needed to access the cluster
+func CreateKubeconfig(sess *session.Session, name string) {
+	configString := `apiVersion: v1
+clusters:
+- cluster:
+    server: <endpoint-url>
+    certificate-authority-data: <base64-encoded-ca-cert>
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: aws
+  name: aws
+current-context: aws
+kind: Config
+preferences: {}
+users:
+- name: aws
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      command: aws
+      args:
+        - "eks"
+        - "get-token"
+        - "--cluster-name"
+        - "<cluster-name>"
+`
+	linesToWrite := configString
+	err := ioutil.WriteFile("temp.txt", []byte(linesToWrite), 0777)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// GetCluster describes the cluster and returns cluster details needed for kubeconfig
 func GetCluster(sess *session.Session, name string) (*eks.DescribeClusterOutput, error) {
 	svc := eks.New(sess)
 	input := &eks.DescribeClusterInput{
@@ -163,38 +197,7 @@ func GetCluster(sess *session.Session, name string) (*eks.DescribeClusterOutput,
 	return result, nil
 }
 
-func NewClientset(cluster *eks.Cluster) (*kubernetes.Clientset, error) {
-	gen, err := token.NewGenerator(true, false)
-	if err != nil {
-		return nil, err
-	}
-	opts := &token.GetTokenOptions{
-		ClusterID: aws.StringValue(cluster.Name),
-	}
-	tok, err := gen.GetWithOptions(opts)
-	if err != nil {
-		return nil, err
-	}
-	ca, err := base64.StdEncoding.DecodeString(aws.StringValue(cluster.CertificateAuthority.Data))
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(
-		&rest.Config{
-			Host:        aws.StringValue(cluster.Endpoint),
-			BearerToken: tok.Token,
-			TLSClientConfig: rest.TLSClientConfig{
-				CAData: ca,
-			},
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return clientset, nil
-}
-
-// GetDeployStatus checks the state of the EKS Cluster before creating a node group
+// GetClusterStatus checks the state of the EKS Cluster before creating a node group
 func GetClusterStatus(sess *session.Session, name string) (string, error) {
 	svc := eks.New(sess)
 	input := &eks.DescribeClusterInput{
@@ -292,81 +295,4 @@ func DeleteEksCluster(sess *session.Session, name, nodeGroupName string) error {
 	}
 	fmt.Println("Cluster", name, "deleted")
 	return nil
-}
-
-// GetEksKubeconfig creates a kubeconfig needed to access the cluster
-func GetEksKubeconfig(sess *session.Session, name string) {
-	/* Kubeconfig
-	   https://pkg.go.dev/k8s.io/kops@v1.19.0/pkg/kubeconfig#KubeconfigBuilder
-	   https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
-	   Replace the <endpoint-url> with the endpoint URL that was created for your cluster.
-
-	   Replace the <base64-encoded-ca-cert> with the certificateAuthority.data that was created for your cluster.
-
-	   Replace the <cluster-name> with your cluster name.
-	   *Get this info from describe cluster output
-	*/
-	/*
-		cluster := KubectlClusterWithName{
-			Name: name,
-			Cluster: KubectlCluster{
-				Server:                   "INSERT-ENDPOINT-HERE",
-				CertificateAuthorityData: "INSERT-CADATA-HERE",
-			},
-		}
-
-		context := KubectlContextWithName{
-			Name: name,
-			Context: KubectlContext{
-				Cluster: name,
-				User:    "maker",
-			},
-		}
-
-		user := KubectlUserWithName{
-			Name: "INSERT-NAME",
-			User: KubectlUser{},
-		}
-
-		kubeConf := KubectlConfig{
-			Kind:           "Config",
-			APIVersion:     "v1",
-			CurrentContext: name,
-			Clusters:       cluster,
-			Contexts:       context,
-			Users:          "INSERT-USERS-OBJECT",
-		}
-	*/
-	/*
-		   *apiVersion: v1
-		   clusters:
-		   - cluster:
-		       server: <endpoint-url>
-		       certificate-authority-data: <base64-encoded-ca-cert>
-		     name: kubernetes
-		   contexts:
-		   - context:
-		       cluster: kubernetes
-		       user: aws
-		     name: aws
-		   *current-context: aws
-		   *kind: Config
-		   preferences: {}
-		   users:
-		   - name: aws
-		     user:
-		       exec:
-		         apiVersion: client.authentication.k8s.io/v1alpha1
-		         command: aws
-		         args:
-		           - "eks"
-		           - "get-token"
-		           - "--cluster-name"
-		           - "<cluster-name>"
-		           # - "--role"
-		           # - "<role-arn>"
-		         # env:
-		           # - name: AWS_PROFILE
-				   #   value: "<aws-profile>"
-	*/
 }
