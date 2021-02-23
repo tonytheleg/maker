@@ -59,6 +59,12 @@ var createClusterCmd = &cobra.Command{
 
 			err = aws.CreateEksNodeGroup(session, name, arn, nodeSize, nodeCount, subnets)
 			utils.HandleErr("Failed to create EKS node group:", err)
+
+			result, err := aws.GetCluster(session, name)
+			utils.HandleErr("Failed to grab cluster info:", err)
+
+			err = aws.CreateKubeconfig(*result.Cluster.Endpoint, *result.Cluster.CertificateAuthority.Data, name)
+			utils.HandleErr("Failed to grab cluster info:", err)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name, nodeSize, nodeCount, version)
 		default:

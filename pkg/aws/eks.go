@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"maker/pkg/utils"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -149,12 +149,12 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 }
 
 // CreateKubeconfig creates a kubeconfig needed to access the cluster
-func CreateKubeconfig(sess *session.Session, name string) {
+func CreateKubeconfig(endpoint, caData, name string) error {
 	configString := `apiVersion: v1
 clusters:
 - cluster:
-    server: <endpoint-url>
-    certificate-authority-data: <base64-encoded-ca-cert>
+    server: ` + endpoint + `
+    certificate-authority-data: ` + caData + `
   name: kubernetes
 contexts:
 - context:
@@ -174,13 +174,14 @@ users:
         - "eks"
         - "get-token"
         - "--cluster-name"
-        - "<cluster-name>"
+        - "` + name + `"
 `
 	linesToWrite := configString
-	err := ioutil.WriteFile("temp.txt", []byte(linesToWrite), 0777)
+	err := ioutil.WriteFile(utils.ConfigFolderPath+"/aws_kubeconfig", []byte(linesToWrite), 0755)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Errorf("Failed to write kubeconfig:", err)
 	}
+	return nil
 }
 
 // GetCluster describes the cluster and returns cluster details needed for kubeconfig
