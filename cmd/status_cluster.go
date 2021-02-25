@@ -37,7 +37,7 @@ var statusClusterCmd = &cobra.Command{
 			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
-			err = aws.PrintEksClusterStatus(session, name)
+			err = aws.PrintEksClusterStatus(session, name, name+"-nodegroup")
 			utils.HandleErr("Failed to create EKS cluster:", err)
 		case "gcp":
 			fmt.Println("create cluster gcp called", name)

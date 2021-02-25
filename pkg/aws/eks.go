@@ -113,6 +113,8 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 			if status == "ACTIVE" {
 				fmt.Println("Cluster completed!")
 				fmt.Println("Current status:", status)
+				fmt.Println("Kubeconfig created at", utils.ConfigFolderPath, "aws_kubeconfig")
+				fmt.Println("AWS CLI required to auth for kubectl")
 				break
 			}
 			fmt.Println("Waiting for cluster completion to create node group -- Current status:", status)
@@ -228,18 +230,18 @@ func GetNodeGroupStatus(sess *session.Session, clusterName, nodeGroupName string
 }
 
 // PrintEksClusterStatus outputs EKS cluster info
-func PrintEksClusterStatus(sess *session.Session, name string) error {
+func PrintEksClusterStatus(sess *session.Session, clusterName, nodeGroupName string) error {
 	svc := eks.New(sess)
 	input := &eks.DescribeClusterInput{
-		Name: aws.String(name),
+		Name: aws.String(clusterName),
 	}
 
 	result, err := svc.DescribeCluster(input)
 	if err != nil {
 		return errors.Errorf("Failed to fetch cluster status:", err)
 	}
-
-	fmt.Printf("\nName: %s\nARN: %s\n\nEndpoint: %s\nService IP: %s\n\nVersion: %s\nCreated: %s\nState: %s\n",
+	fmt.Printf("\nCluster Info\n----------\n")
+	fmt.Printf("Name: %s\nARN: %s\n\nEndpoint: %s\nService IP: %s\n\nVersion: %s\nCreated: %s\nState: %s\n",
 		*result.Cluster.Name,
 		*result.Cluster.Arn,
 		*result.Cluster.Endpoint,
@@ -247,6 +249,26 @@ func PrintEksClusterStatus(sess *session.Session, name string) error {
 		*result.Cluster.Version,
 		*result.Cluster.CreatedAt,
 		*result.Cluster.Status,
+	)
+
+	nodeSvc := eks.New(sess)
+	nodeInput := &eks.DescribeNodegroupInput{
+		ClusterName:   aws.String(clusterName),
+		NodegroupName: aws.String(nodeGroupName),
+	}
+
+	nodesResult, err := nodeSvc.DescribeNodegroup(nodeInput)
+	if err != nil {
+		return errors.Errorf("Failed to fetch node group status:", err)
+	}
+	fmt.Printf("\nNodegroup Info\n----------\n")
+	fmt.Printf("Name: %s\nARN: %s\nAMI: %s\nInstance Type: %s\nCreated At: %s\nStatus: %s\n",
+		*nodesResult.Nodegroup.NodegroupName,
+		*nodesResult.Nodegroup.NodegroupArn,
+		*nodesResult.Nodegroup.AmiType,
+		*nodesResult.Nodegroup.InstanceTypes[0],
+		*nodesResult.Nodegroup.CreatedAt,
+		*nodesResult.Nodegroup.Status,
 	)
 	return nil
 }
