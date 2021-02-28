@@ -26,57 +26,6 @@ var CredsName = "aws_credentials"
 // CredsPath is the full path to the ConfigFile
 var CredsPath = filepath.Join(utils.HomeDir, utils.ConfigFolder, CredsName)
 
-// These are pulled from k8s.io/kops/pkg/kubeconfig which for some reason I couldn't import?
-
-// KubectlConfig defines a kubeconfig file
-type KubectlConfig struct {
-	Kind           string                    `json:"kind"`
-	APIVersion     string                    `json:"apiVersion"`
-	CurrentContext string                    `json:"current-context"`
-	Clusters       []*KubectlClusterWithName `json:"clusters"`
-	Contexts       []*KubectlContextWithName `json:"contexts"`
-	Users          []*KubectlUserWithName    `json:"users"`
-}
-
-// KubectlClusterWithName defines a cluster entry for kubeconfig
-type KubectlClusterWithName struct {
-	Name    string         `json:"name"`
-	Cluster KubectlCluster `json:"cluster"`
-}
-
-// KubectlCluster defines cluster connection details
-type KubectlCluster struct {
-	Server                   string `json:"server,omitempty"`
-	CertificateAuthorityData []byte `json:"certificate-authority-data,omitempty"`
-}
-
-// KubectlContextWithName defines a context entry for kubeconfig
-type KubectlContextWithName struct {
-	Name    string         `json:"name"`
-	Context KubectlContext `json:"context"`
-}
-
-// KubectlContext defines context cluster details
-type KubectlContext struct {
-	Cluster string `json:"cluster"`
-	User    string `json:"user"`
-}
-
-// KubectlUserWithName defines a user entry for kubeconfig
-type KubectlUserWithName struct {
-	Name string      `json:"name"`
-	User KubectlUser `json:"user"`
-}
-
-// KubectlUser defines user details
-type KubectlUser struct {
-	ClientCertificateData []byte `json:"client-certificate-data,omitempty"`
-	ClientKeyData         []byte `json:"client-key-data,omitempty"`
-	Password              string `json:"password,omitempty"`
-	Username              string `json:"username,omitempty"`
-	Token                 string `json:"token,omitempty"`
-}
-
 // Configure sets up the aws credentials file needed to auth with AWS
 func Configure() error {
 	// check that .maker exists

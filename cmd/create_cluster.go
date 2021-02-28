@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -66,7 +67,14 @@ var createClusterCmd = &cobra.Command{
 			err = aws.CreateKubeconfig(*result.Cluster.Endpoint, *result.Cluster.CertificateAuthority.Data, name)
 			utils.HandleErr("Failed to grab cluster info:", err)
 		case "gcp":
-			fmt.Println("create cluster gcp called", name, nodeSize, nodeCount, version)
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			client, err := gcp.CreateGkeClient(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.CreateGkeCluster(client, name, gcpProject, defaultZone, nodeSize, nodeCount)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -80,7 +88,7 @@ func init() {
 	createClusterCmd.MarkFlagRequired("name")
 	createClusterCmd.Flags().StringP("node-size", "s", "", "sets the node VM size/Instance type")
 	createClusterCmd.MarkFlagRequired("node-size")
-	createClusterCmd.Flags().IntP("node-count", "c", 2, "sets the node pool size (default 1)")
+	createClusterCmd.Flags().IntP("node-count", "c", 2, "sets the node pool size")
 	createClusterCmd.Flags().StringP("version", "v", "", "sets the Kubernetes/Vendor version")
 	createClusterCmd.MarkFlagRequired("version")
 	createClusterCmd.Flags().StringSliceP("subnets", "b", nil, "comma separated list of 2 subnets to deploy to")

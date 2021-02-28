@@ -36,7 +36,7 @@ func CreateStorageBucket(client *storage.Client, name, project string) error {
 	return nil
 }
 
-// PrintInstanceStatus outputs instance info
+// GetStorageBucketInfo outputs instance info
 func GetStorageBucketInfo(client *storage.Client, name string) error {
 	ctx := context.Background()
 	bkt := client.Bucket(name)

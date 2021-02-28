@@ -3,7 +3,7 @@ module maker
 go 1.15
 
 require (
-	cloud.google.com/go v0.77.0 // indirect
+	cloud.google.com/go v0.77.0
 	cloud.google.com/go/storage v1.13.0
 	github.com/aws/aws-sdk-go v1.37.15
 	github.com/digitalocean/godo v1.58.0
@@ -26,7 +26,7 @@ require (
 	golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43 // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
 	google.golang.org/api v0.40.0
-	google.golang.org/genproto v0.0.0-20210219173056-d891e3cb3b5b // indirect
+	google.golang.org/genproto v0.0.0-20210219173056-d891e3cb3b5b
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
