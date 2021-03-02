@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -40,7 +41,14 @@ var statusClusterCmd = &cobra.Command{
 			err = aws.PrintEksClusterStatus(session, name, name+"-nodegroup")
 			utils.HandleErr("Failed to create EKS cluster:", err)
 		case "gcp":
-			fmt.Println("create cluster gcp called", name)
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			client, err := gcp.CreateGkeClient(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			gcp.PrintGkeClusterStatus(client, name, gcpProject, defaultZone)
+			utils.HandleErr("Failed to fetch GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

@@ -113,7 +113,7 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 			if status == "ACTIVE" {
 				fmt.Println("Cluster completed!")
 				fmt.Println("Current status:", status)
-				fmt.Println("Kubeconfig created at", utils.ConfigFolderPath, "aws_kubeconfig")
+				fmt.Println("Kubeconfig created at", utils.ConfigFolderPath+"/aws_kubeconfig")
 				fmt.Println("AWS CLI required to auth for kubectl")
 				break
 			}

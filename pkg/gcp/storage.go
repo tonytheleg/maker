@@ -93,23 +93,22 @@ func DeleteStorageBucket(client *storage.Client, name, project string) error {
 
 	if confirmation != "y" {
 		return errors.Errorf("Cannot proceed -- must delete files before deleting bucket")
-	} else {
-		ctx := context.Background()
-		bucket := client.Bucket(name)
-		item := bucket.Objects(ctx, nil)
-		for {
-			objAttrs, err := item.Next()
-			if err != nil && err != iterator.Done {
-				// TODO: Handle error.
-			}
-			if err == iterator.Done {
-				break
-			}
-			if err := bucket.Object(objAttrs.Name).Delete(ctx); err != nil {
-				// TODO: Handle error.
-			}
-		}
-		fmt.Println("deleted all object items in the bucket specified.")
-		return nil
 	}
+	ctx := context.Background()
+	bucket := client.Bucket(name)
+	item := bucket.Objects(ctx, nil)
+	for {
+		objAttrs, err := item.Next()
+		if err != nil && err != iterator.Done {
+			// TODO: Handle error.
+		}
+		if err == iterator.Done {
+			break
+		}
+		if err := bucket.Object(objAttrs.Name).Delete(ctx); err != nil {
+			// TODO: Handle error.
+		}
+	}
+	fmt.Println("deleted all object items in the bucket specified.")
+	return nil
 }

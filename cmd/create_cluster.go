@@ -74,7 +74,13 @@ var createClusterCmd = &cobra.Command{
 			utils.HandleErr("Failed to create a Compute Service:", err)
 
 			err = gcp.CreateGkeCluster(client, name, gcpProject, defaultZone, nodeSize, nodeCount)
-			utils.HandleErr("Failed to create GCE instance:", err)
+			utils.HandleErr("Failed to create GKE Cluster:", err)
+
+			accessToken, err := gcp.FetchAccessToken(keyfile)
+			utils.HandleErr("Failed to fetch token", err)
+
+			err = gcp.CreateKubeconfig(client, name, gcpProject, defaultZone, accessToken)
+			utils.HandleErr("Failed to create kubeconfig", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

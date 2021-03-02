@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -42,7 +43,14 @@ var deleteClusterCmd = &cobra.Command{
 			err = aws.DeleteEksCluster(session, name, name+"-nodegroup")
 			utils.HandleErr("Failed to delete the cluster", err)
 		case "gcp":
-			fmt.Println("create cluster gcp called", name)
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			client, err := gcp.CreateGkeClient(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.DeleteGkeCluster(client, name, gcpProject, defaultZone)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
@@ -55,3 +63,11 @@ func init() {
 	deleteClusterCmd.Flags().StringP("name", "n", "", "name of the cluster")
 	deleteClusterCmd.MarkFlagRequired("name")
 }
+
+/*
+[tony@batcave ~]$ gcloud auth activate-service-account maker-sa@review-287714.iam.gserviceaccount.com  --key-file=/home/tony/.maker/makersa.json
+Activated service account credentials for: [maker-sa@review-287714.iam.gserviceaccount.com]
+[tony@batcave ~]$ gcloud auth --help
+[tony@batcave ~]$ gcloud auth print-access-token
+ya29.c.KqQB9AcGt7gpAbFXPJfB-rp3o7O0WmGSI_TSrFdzu2Xm8kKckPQb7eOV14p4BNvC84X_cH9Vo4rgussbYiiR3Ers21Z-lyjPpYzX1qzGCVXIMYzt8mtmmp9dJ_EeNcxYtquoVNfjTdaVDek9A7QmkGpO6JfPnmnZML8JxtPmkPZMQ2kqb2ed_hJSsjeQ3UZ84yN5LqH_pNuw5tFV1vJbIp5NEBK1AkI
+*/
