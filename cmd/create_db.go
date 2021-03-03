@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -31,7 +32,14 @@ Sizes and Image names are provider specific!`,
 			err = do.CreateDoDatabase(client, name, size, defaultRegion)
 			utils.HandleErr("Failed to create database:", err)
 		case "aws":
-			fmt.Println("create DB called", provider, name, size)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to setup AWS Session:", err)
+
+			err = aws.CreateRdsInstance(session, name, size)
+			utils.HandleErr("Failed to create EC2 instance:", err)
 		case "gcp":
 			fmt.Println("create DB called", provider, name, size)
 		default:

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -31,7 +32,13 @@ var statusDbCmd = &cobra.Command{
 
 			do.PrintDatabaseStatus(client, dropletID)
 		case "aws":
-			fmt.Println("create DB called", provider, name)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to setup AWS Session:", err)
+
+			aws.PrintRdsStatus(session, name)
 		case "gcp":
 			fmt.Println("create DB called", provider, name)
 		default:

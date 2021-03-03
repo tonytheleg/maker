@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/aws"
 	"maker/pkg/do"
 	"maker/pkg/utils"
 
@@ -32,7 +33,14 @@ var deleteDbCmd = &cobra.Command{
 			err = do.DeleteDoDatabase(client, databaseID, name)
 			utils.HandleErr("Failed to delete droplet:", err)
 		case "aws":
-			fmt.Println("create DB called", provider, name)
+			defaultRegion, err := aws.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			session, err := aws.CreateAwsSession(aws.CredsPath, defaultRegion)
+			utils.HandleErr("Failed to setup AWS Session:", err)
+
+			err = aws.DeleteRdsInstance(session, name)
+			utils.HandleErr("Failed to delete EC2 instance ID:", err)
 		case "gcp":
 			fmt.Println("create DB called", provider, name)
 		default:
