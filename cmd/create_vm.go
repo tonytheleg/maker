@@ -29,8 +29,6 @@ Sizes and Image names are provider specific! GCP requires images in 'project/ima
 
 			patToken, defaultRegion := config.PatToken, config.DefaultRegion
 			client := do.CreateDoClient(patToken, defaultRegion)
-			err = do.Authenticate(client)
-			utils.HandleErr("Failed to authenticate:", err)
 
 			err = do.CreateDoDroplet(client, name, defaultRegion, size, image)
 			utils.HandleErr("Failed to create droplet:", err)

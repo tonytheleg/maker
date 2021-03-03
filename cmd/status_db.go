@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +19,17 @@ var statusDbCmd = &cobra.Command{
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			fmt.Println("create DB called", provider, name)
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			patToken, defaultRegion := config.PatToken, config.DefaultRegion
+
+			client := do.CreateDoClient(patToken, defaultRegion)
+
+			dropletID, err := do.GetDoDatabase(client, name)
+			utils.HandleErr("Faiiled to fetch droplet ID:", err)
+
+			do.PrintDatabaseStatus(client, dropletID)
 		case "aws":
 			fmt.Println("create DB called", provider, name)
 		case "gcp":

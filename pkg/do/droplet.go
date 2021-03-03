@@ -14,16 +14,6 @@ func CreateDoClient(patToken, defaultRegion string) *godo.Client {
 	return client
 }
 
-// Authenticate verifies ability to access DO through client
-func Authenticate(client *godo.Client) error {
-	ctx := context.TODO()
-	_, _, err := client.Account.Get(ctx)
-	if err != nil {
-		return errors.Errorf("Failed to create context:", err)
-	}
-	return nil
-}
-
 // CreateDoDroplet creates a droplet with provided specs
 func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug string, imageSlug string) error {
 	ctx := context.TODO()

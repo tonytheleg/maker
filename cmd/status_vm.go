@@ -29,8 +29,6 @@ Example:
 			patToken, defaultRegion := config.PatToken, config.DefaultRegion
 
 			client := do.CreateDoClient(patToken, defaultRegion)
-			err = do.Authenticate(client)
-			utils.HandleErr("Failed to authenticate:", err)
 
 			dropletID, err := do.GetDoDroplet(client, name)
 			utils.HandleErr("Faiiled to fetch droplet ID:", err)

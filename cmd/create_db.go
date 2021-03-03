@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"maker/pkg/do"
+	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -19,7 +21,15 @@ Sizes and Image names are provider specific!`,
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
-			fmt.Println("create DB called", provider, name, size)
+			config, err := do.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			patToken, defaultRegion := config.PatToken, config.DefaultRegion
+
+			client := do.CreateDoClient(patToken, defaultRegion)
+
+			err = do.CreateDoDatabase(client, name, defaultRegion)
+			utils.HandleErr("Failed to create database:", err)
 		case "aws":
 			fmt.Println("create DB called", provider, name, size)
 		case "gcp":

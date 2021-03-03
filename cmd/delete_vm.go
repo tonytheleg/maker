@@ -27,15 +27,12 @@ var deleteVMCmd = &cobra.Command{
 			patToken, defaultRegion := config.PatToken, config.DefaultRegion
 
 			client := do.CreateDoClient(patToken, defaultRegion)
-			err = do.Authenticate(client)
-			utils.HandleErr("Failed to authenticate:", err)
 
 			dropletID, err := do.GetDoDroplet(client, name)
 			utils.HandleErr("Faiiled to fetch droplet ID:", err)
 
 			err = do.DeleteDoDroplet(client, dropletID, name)
 			utils.HandleErr("Failed to delete droplet:", err)
-
 		case "aws":
 			defaultRegion, err := aws.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
