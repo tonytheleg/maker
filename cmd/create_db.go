@@ -28,7 +28,7 @@ Sizes and Image names are provider specific!`,
 
 			client := do.CreateDoClient(patToken, defaultRegion)
 
-			err = do.CreateDoDatabase(client, name, defaultRegion)
+			err = do.CreateDoDatabase(client, name, size, defaultRegion)
 			utils.HandleErr("Failed to create database:", err)
 		case "aws":
 			fmt.Println("create DB called", provider, name, size)

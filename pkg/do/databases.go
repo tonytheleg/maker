@@ -9,14 +9,14 @@ import (
 )
 
 // CreateDoDatabase creates a Postgres DB cluster on Digital Ocean
-func CreateDoDatabase(client *godo.Client, name, region string) error {
+func CreateDoDatabase(client *godo.Client, name, size, region string) error {
 	ctx := context.TODO()
 	createRequest := &godo.DatabaseCreateRequest{
 		Name:       name,
 		EngineSlug: "pg",
 		Version:    "10",
 		Region:     region,
-		SizeSlug:   "db-s-1vcpu-10gb",
+		SizeSlug:   size,
 		NumNodes:   1,
 	}
 
