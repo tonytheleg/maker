@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -41,7 +42,14 @@ Sizes and Image names are provider specific!`,
 			err = aws.CreateRdsInstance(session, name, size)
 			utils.HandleErr("Failed to create EC2 instance:", err)
 		case "gcp":
-			fmt.Println("create DB called", provider, name, size)
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			service, err := gcp.CreateSQLService(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.CreateSQLInstance(service, name, gcpProject, defaultZone, size)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -42,7 +43,14 @@ var deleteDbCmd = &cobra.Command{
 			err = aws.DeleteRdsInstance(session, name)
 			utils.HandleErr("Failed to delete EC2 instance ID:", err)
 		case "gcp":
-			fmt.Println("create DB called", provider, name)
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			service, err := gcp.CreateSQLService(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.DeleteSQLInstance(service, name, gcpProject, defaultZone)
+			utils.HandleErr("Failed to create GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

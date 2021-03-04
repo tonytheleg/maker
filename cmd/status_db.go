@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maker/pkg/aws"
 	"maker/pkg/do"
+	"maker/pkg/gcp"
 	"maker/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -40,7 +41,14 @@ var statusDbCmd = &cobra.Command{
 
 			aws.PrintRdsStatus(session, name)
 		case "gcp":
-			fmt.Println("create DB called", provider, name)
+			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
+			utils.HandleErr("Failed to load config:", err)
+
+			service, err := gcp.CreateSQLService(keyfile)
+			utils.HandleErr("Failed to create a Compute Service:", err)
+
+			err = gcp.PrintSQLDbStatus(service, name, gcpProject, defaultZone)
+			utils.HandleErr("Failed to fetch GCE instance:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}
