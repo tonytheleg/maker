@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io/ioutil"
-	"maker/pkg/utils"
+	"maker/internal/utils"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"

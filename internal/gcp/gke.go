@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"maker/pkg/utils"
+	"maker/internal/utils"
 	"time"
 
 	container "cloud.google.com/go/container/apiv1"

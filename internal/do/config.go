@@ -3,7 +3,7 @@ package do
 import (
 	"fmt"
 	"io/ioutil"
-	"maker/pkg/utils"
+	"maker/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
