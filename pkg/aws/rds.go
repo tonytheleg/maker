@@ -21,11 +21,11 @@ func CreateRdsInstance(sess *session.Session, name, size string) error {
 		MasterUsername:       aws.String("rdsadmintemp"),
 	}
 
-	result, err := svc.CreateDBInstance(input)
+	_, err := svc.CreateDBInstance(input)
 	if err != nil {
 		return errors.Errorf("Failed to create database %s:", name, err)
 	}
-	fmt.Println(result)
+	fmt.Println("Database", name, "creating")
 	return nil
 }
 
@@ -37,11 +37,11 @@ func DeleteRdsInstance(sess *session.Session, name string) error {
 		SkipFinalSnapshot:    aws.Bool(true),
 	}
 
-	result, err := svc.DeleteDBInstance(input)
+	_, err := svc.DeleteDBInstance(input)
 	if err != nil {
 		return errors.Errorf("Failed to create database %s:", name, err)
 	}
-	fmt.Println(result)
+	fmt.Println("Database", name, "is being deleted")
 	return nil
 }
 
@@ -56,21 +56,17 @@ func PrintRdsStatus(sess *session.Session, name string) error {
 	if err != nil {
 		return errors.Errorf("Failed to create database %s:", name, err)
 	}
-	fmt.Println(
-		result.DBInstances[0].DBName,
-		result.DBInstances[0].DBInstanceArn,
-		result.DBInstances[0].DBInstanceIdentifier,
-		result.DBInstances[0].DbiResourceId,
-		result.DBInstances[0].AvailabilityZone,
-		result.DBInstances[0].DBInstanceClass,
-		result.DBInstances[0].ListenerEndpoint,
-		result.DBInstances[0].MasterUsername,
-		result.DBInstances[0].Endpoint,
-		result.DBInstances[0].DbInstancePort,
-		result.DBInstances[0].Engine,
-		result.DBInstances[0].EngineVersion,
-		result.DBInstances[0].InstanceCreateTime,
-		result.DBInstances[0].DBInstanceStatus,
+	fmt.Printf("Name: %s\nARN: %s\nAZ: %s\nSize: %s\n\nDB Username: %s\nEndpoint: %s\nDB Engine: %s\nDB Version: %s\n\nCreated: %s\nStatus: %s\n",
+		*result.DBInstances[0].DBInstanceIdentifier,
+		*result.DBInstances[0].DBInstanceArn,
+		*result.DBInstances[0].AvailabilityZone,
+		*result.DBInstances[0].DBInstanceClass,
+		*result.DBInstances[0].MasterUsername,
+		*result.DBInstances[0].Endpoint.Address,
+		*result.DBInstances[0].Engine,
+		*result.DBInstances[0].EngineVersion,
+		*result.DBInstances[0].InstanceCreateTime,
+		*result.DBInstances[0].DBInstanceStatus,
 	)
 	return nil
 }
