@@ -3,10 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"maker/pkg/aws"
-	"maker/pkg/do"
-	"maker/pkg/gcp"
-	"maker/pkg/utils"
+	"maker/internal/aws"
+	"maker/internal/do"
+	"maker/internal/gcp"
+	"maker/internal/utils"
 
 	"github.com/spf13/cobra"
 )

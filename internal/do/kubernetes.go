@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"maker/pkg/utils"
+	"maker/internal/utils"
 
 	"github.com/digitalocean/godo"
 	"github.com/pkg/errors"
