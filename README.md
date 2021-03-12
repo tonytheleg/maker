@@ -8,7 +8,7 @@
 
 Maker is a CLI written to create various types of services in various cloud providers such as VM's, K8s clusters, storage buckets and SQL Databases. Its not meant to be a full replacement for each providers own CLI's or clients, but something handy for just creating a few key objects without needing 4+ CLI's or multiple Terraform providers. Handy for spinning up and down infra for labs and devlopment work kinda thing. 
 
-This project is a personal [100 Days of Code](https://www.100daysofcode.com/) project in an effort to break the tutorial death cycle and start having some fun wtih Go! If you're curious to learn more about the various cloud provider's API's this is a good repo to poke through and see what it takes to do some general tasks. I learned a ton!
+This project is a personal [100 Days of Code](https://www.100daysofcode.com/) project in an effort to break the tutorial death cycle and start having some fun wtih Go! If you're curious to learn more about the various cloud provider's API's this is a good repo to poke through and see what it takes to do some general tasks. I learned a ton! Cobra/Viper are also amazing tools and worth checking out too!
 
 
 ### Basic Usage
