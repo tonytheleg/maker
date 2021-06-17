@@ -23,14 +23,14 @@ type ConfigFile struct {
 var ConfigName = "gcp_config"
 
 // ConfigPath is the full path to the ConfigFile
-var ConfigPath = filepath.Join(utils.HomeDir, utils.ConfigFolder, ConfigName)
+var ConfigPath = filepath.Join(utils.ConfigFolderPath, ConfigName)
 
 // Configure sets path to the key file requried to auth with a service accoutn
 func Configure() error {
 	// check that .maker exists
-	_, err := os.Stat(utils.ConfigFolder)
-	if os.IsExist(err) {
-		err := os.Mkdir(filepath.Join(utils.HomeDir, utils.ConfigFolder), 0755)
+	_, err := os.Stat(utils.ConfigFolderPath)
+	if os.IsNotExist(err) {
+		err := os.Mkdir(utils.ConfigFolderPath, 0755)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config directory %s:", utils.ConfigFolder)
 		}

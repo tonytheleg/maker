@@ -24,14 +24,14 @@ type CredsFile struct {
 var CredsName = "aws_credentials"
 
 // CredsPath is the full path to the ConfigFile
-var CredsPath = filepath.Join(utils.HomeDir, utils.ConfigFolder, CredsName)
+var CredsPath = filepath.Join(utils.ConfigFolderPath, CredsName)
 
 // Configure sets up the aws credentials file needed to auth with AWS
 func Configure() error {
 	// check that .maker exists
-	_, err := os.Stat(utils.ConfigFolder)
-	if os.IsExist(err) {
-		err := os.Mkdir(filepath.Join(utils.HomeDir, utils.ConfigFolder), 0755)
+	_, err := os.Stat(utils.ConfigFolderPath)
+	if os.IsNotExist(err) {
+		err := os.Mkdir(utils.ConfigFolderPath, 0755)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to creds folder %s:", utils.ConfigFolder)
 		}

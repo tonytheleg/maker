@@ -27,7 +27,6 @@ Sizes and Image names are provider specific!`,
 			utils.HandleErr("Failed to load config:", err)
 
 			patToken, defaultRegion := config.PatToken, config.DefaultRegion
-
 			client := do.CreateDoClient(patToken, defaultRegion)
 
 			err = do.CreateDoDatabase(client, name, size, defaultRegion)

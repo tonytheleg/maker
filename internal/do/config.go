@@ -26,14 +26,14 @@ type ConfigFile struct {
 var ConfigName = "do_config"
 
 // ConfigPath is the full path to the ConfigFile
-var ConfigPath = filepath.Join(utils.HomeDir, utils.ConfigFolder, ConfigName)
+var ConfigPath = filepath.Join(utils.ConfigFolderPath, ConfigName)
 
 // SetupConfig setups config directory and file
 func SetupConfig() error {
 	// check that .maker exists
-	_, err := os.Stat(utils.ConfigFolder)
-	if os.IsExist(err) {
-		err := os.Mkdir(filepath.Join(utils.HomeDir, utils.ConfigFolder), 0755)
+	_, err := os.Stat(utils.ConfigFolderPath)
+	if os.IsNotExist(err) {
+		err := os.Mkdir(utils.ConfigFolderPath, 0755)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to create config directory %s:", utils.ConfigFolder)
 		}
@@ -51,7 +51,7 @@ func SetupConfig() error {
 // Configure sets the PAT token and default Region for Digital Ocean
 func Configure() error {
 	task := GetConfigTasks()
-	config, _ := LoadConfig()
+	config := &ConfigFile{}
 
 	switch task {
 	case "1":
@@ -152,13 +152,13 @@ func CreateSpacesConfigFile(config *ConfigFile) error {
 	var accessKey string
 	fmt.Println("Please authenticate using your Digital Ocean account...")
 	fmt.Println("Tokens can be generated at https://cloud.digitalocean.com/account/api/tokens")
-	fmt.Print("Enter Access Key: ")
+	fmt.Print("Enter Spaces Access Key: ")
 	fmt.Scanln(&accessKey)
 	config.SpacesAccessKey = string(accessKey)
 	println()
 
 	// ask for secret key
-	fmt.Print("Enter Secret Key: ")
+	fmt.Print("Enter Spaces Secret Key: ")
 	pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		return errors.Errorf("Failed to secret key:", err)
@@ -168,7 +168,7 @@ func CreateSpacesConfigFile(config *ConfigFile) error {
 
 	// ask for default region
 	var region string
-	fmt.Print("Default Endpoint Region (ie, nyc3): ")
+	fmt.Print("Default Spaces Endpoint Region (ie, nyc3): ")
 	fmt.Scanln(&region)
 	config.SpacesDefaultEndpoint = string(region)
 	println()
