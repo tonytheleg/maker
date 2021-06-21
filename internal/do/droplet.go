@@ -17,6 +17,37 @@ func CreateDoClient(patToken, defaultRegion string) *godo.Client {
 // CreateDoDroplet creates a droplet with provided specs
 func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug string, imageSlug string) error {
 	ctx := context.TODO()
+	dropletKey := &godo.DropletCreateSSHKey{}
+	// add check for SSH Keys
+	opt := &godo.ListOptions{
+		Page:    1,
+		PerPage: 200,
+	}
+	keys, _, err := client.Keys.List(ctx, opt)
+	if err != nil {
+		return errors.Errorf("Failed to create droplet:", err)
+	}
+	if len(keys) < 1 {
+		fmt.Println("To access a DO Droplet an SSH Key is required")
+		fmt.Println("Create an SSH Key and Upload and try again")
+		fmt.Println("https://docs.digitalocean.com/products/droplets/how-to/add-ssh-keys/to-account/")
+		return errors.Errorf("failed to create droplet: SSH Key required and none are avaiable")
+	}
+	if len(keys) > 1 {
+		var sshkeyID int
+		fmt.Println("Multiple SSH Keys found -- Which would you like to use?")
+		for _, sshkeys := range keys {
+			fmt.Printf("Name: %s  ID: %d\n", sshkeys.Name, sshkeys.ID)
+		}
+		fmt.Printf("Enter a Key ID (not name): ")
+		fmt.Scanln(&sshkeyID)
+		*dropletKey = godo.DropletCreateSSHKey{ID: sshkeyID}
+	} else {
+		fmt.Printf("Using SSH Key %s\n", keys[0].Name)
+		sshkeyID := keys[0].ID
+		*dropletKey = godo.DropletCreateSSHKey{ID: sshkeyID}
+	}
+
 	createRequest := &godo.DropletCreateRequest{
 		Name:   name,
 		Region: region,
@@ -24,6 +55,7 @@ func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug s
 		Image: godo.DropletCreateImage{
 			Slug: imageSlug,
 		},
+		SSHKeys: []godo.DropletCreateSSHKey{*dropletKey},
 	}
 
 	droplet, _, err := client.Droplets.Create(ctx, createRequest)
