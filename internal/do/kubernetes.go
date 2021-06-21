@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"maker/internal/utils"
+	"time"
 
 	"github.com/digitalocean/godo"
 	"github.com/pkg/errors"
@@ -29,8 +30,26 @@ func CreateDoCluster(client *godo.Client, name, defaultRegion, nodeSize, version
 	if err != nil {
 		return "", errors.Errorf("Creating cluster failed:", err)
 	}
-	fmt.Println("Cluster", name, "created")
-	return cluster.ID, nil
+	fmt.Println("Cluster", name, "creating...")
+
+	// check status before fetching kubeconfig
+	status := ""
+	for {
+		cluster, _, err := client.Kubernetes.Get(ctx, cluster.ID)
+		if err != nil {
+			fmt.Println("Could not fetch cluster status:", err)
+		}
+		status = string(cluster.Status.State)
+		if status == "error" || status == "degraded" || status == "invalid" {
+			return "", errors.Errorf("Creating cluster failed:", err)
+		} else if status == "running" {
+			fmt.Println("Cluster creation completed!")
+			return cluster.ID, nil
+		}
+		fmt.Println("Waiting for completion...")
+		time.Sleep(30 * time.Second)
+		continue
+	}
 }
 
 // GetDoCluster grabs the droplet ID with the provided name
