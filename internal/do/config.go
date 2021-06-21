@@ -50,8 +50,18 @@ func SetupConfig() error {
 
 // Configure sets the PAT token and default Region for Digital Ocean
 func Configure() error {
-	task := GetConfigTasks()
 	config := &ConfigFile{}
+	task := GetConfigTasks()
+
+	_, err := os.Stat(ConfigPath)
+	fmt.Println(err)
+	// file exists, err is nil -- load it to update first
+	if err == nil {
+		config, err = LoadConfig()
+		if err != nil {
+			return errors.Wrapf(err, "Failed to load current config")
+		}
+	}
 
 	switch task {
 	case "1":
@@ -121,6 +131,11 @@ func PrintCurrentConfig() error {
 
 // CreateDropletConfigFile creates the config file to use in all DO commands
 func CreateDropletConfigFile(config *ConfigFile) error {
+	// preserve existing configs for spaces
+	tmpSpacesAccessKey := config.SpacesAccessKey
+	tmpSpacesSecretKey := config.SpacesSecretKey
+	tmpSpacesDefaultEndpoint := config.SpacesDefaultEndpoint
+
 	// ask for PAT token
 	fmt.Println("Please authenticate using your Digital Ocean account...")
 	fmt.Println("Tokens can be generated at https://cloud.digitalocean.com/account/api/tokens")
@@ -143,11 +158,18 @@ func CreateDropletConfigFile(config *ConfigFile) error {
 	viper.SetConfigType("yaml")
 	viper.Set("pat_token", config.PatToken)
 	viper.Set("default_region", config.DefaultRegion)
+	viper.Set("spaces_access_key", tmpSpacesAccessKey)
+	viper.Set("spaces_secret_key", tmpSpacesSecretKey)
+	viper.Set("spaces_endpoint_region", tmpSpacesDefaultEndpoint)
 	return viper.WriteConfigAs(ConfigPath)
 }
 
 // CreateSpacesConfigFile creates the config file to use in spaces creation
 func CreateSpacesConfigFile(config *ConfigFile) error {
+	// preserve existing config for droplets
+	tmpPatToken := config.PatToken
+	tmpRegion := config.DefaultRegion
+
 	// ask for access key
 	var accessKey string
 	fmt.Println("Please authenticate using your Digital Ocean account...")
@@ -155,7 +177,6 @@ func CreateSpacesConfigFile(config *ConfigFile) error {
 	fmt.Print("Enter Spaces Access Key: ")
 	fmt.Scanln(&accessKey)
 	config.SpacesAccessKey = string(accessKey)
-	println()
 
 	// ask for secret key
 	fmt.Print("Enter Spaces Secret Key: ")
@@ -175,6 +196,8 @@ func CreateSpacesConfigFile(config *ConfigFile) error {
 
 	// create the config
 	viper.SetConfigType("yaml")
+	viper.Set("pat_token", tmpPatToken)
+	viper.Set("default_region", tmpRegion)
 	viper.Set("spaces_access_key", config.SpacesAccessKey)
 	viper.Set("spaces_secret_key", config.SpacesSecretKey)
 	viper.Set("spaces_endpoint_region", config.SpacesDefaultEndpoint)
