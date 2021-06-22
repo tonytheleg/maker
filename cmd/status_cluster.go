@@ -18,6 +18,7 @@ var statusClusterCmd = &cobra.Command{
 	Example: "maker status cluster --provider {do|aws|gcp} --name CLUSTER-NAME",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
+		getConfig, _ := cmd.Flags().GetBool("fetch-kubeconfig")
 
 		switch provider, _ := cmd.Flags().GetString("provider"); provider {
 		case "do":
@@ -30,6 +31,9 @@ var statusClusterCmd = &cobra.Command{
 
 			clusterID, err := do.GetDoCluster(client, name)
 			do.PrintClusterStatus(client, clusterID)
+			if getConfig {
+				do.FetchDoKubeConfig(client, clusterID)
+			}
 			utils.HandleErr("Failed to create cluster:", err)
 		case "aws":
 			defaultRegion, err := aws.LoadConfig()
@@ -60,4 +64,5 @@ func init() {
 
 	statusClusterCmd.Flags().StringP("name", "n", "", "name of the cluster")
 	statusClusterCmd.MarkFlagRequired("name")
+	statusClusterCmd.Flags().BoolP("fetch-kubeconfig", "k", false, "fetches the Kubeconfig while checking status")
 }
