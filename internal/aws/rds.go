@@ -56,17 +56,30 @@ func PrintRdsStatus(sess *session.Session, name string) error {
 	if err != nil {
 		return errors.Errorf("Failed to create database %s:", name, err)
 	}
-	fmt.Printf("Name: %s\nARN: %s\nAZ: %s\nSize: %s\n\nDB Username: %s\nEndpoint: %s\nDB Engine: %s\nDB Version: %s\n\nCreated: %s\nStatus: %s\n",
-		*result.DBInstances[0].DBInstanceIdentifier,
-		*result.DBInstances[0].DBInstanceArn,
-		*result.DBInstances[0].AvailabilityZone,
-		*result.DBInstances[0].DBInstanceClass,
-		*result.DBInstances[0].MasterUsername,
-		*result.DBInstances[0].Endpoint.Address,
-		*result.DBInstances[0].Engine,
-		*result.DBInstances[0].EngineVersion,
-		*result.DBInstances[0].InstanceCreateTime,
-		*result.DBInstances[0].DBInstanceStatus,
-	)
+	if *result.DBInstances[0].DBInstanceStatus == "creating" {
+		fmt.Printf("Name: %s\nARN: %s\nAZ: %s\nSize: %s\n\nDB Engine: %s\nDB Version: %s\n\nStatus: %s\n",
+			*result.DBInstances[0].DBInstanceIdentifier,
+			*result.DBInstances[0].DBInstanceArn,
+			*result.DBInstances[0].AvailabilityZone,
+			*result.DBInstances[0].DBInstanceClass,
+			*result.DBInstances[0].Engine,
+			*result.DBInstances[0].EngineVersion,
+			*result.DBInstances[0].DBInstanceStatus,
+		)
+		fmt.Println("Endpoint info and credentials available once created")
+	} else {
+		fmt.Printf("Name: %s\nARN: %s\nAZ: %s\nSize: %s\n\nDB Username: %s\n\nEndpoint: %s\nDB Engine: %s\nDB Version: %s\n\nCreated: %s\nStatus: %s\n",
+			*result.DBInstances[0].DBInstanceIdentifier,
+			*result.DBInstances[0].DBInstanceArn,
+			*result.DBInstances[0].AvailabilityZone,
+			*result.DBInstances[0].DBInstanceClass,
+			*result.DBInstances[0].MasterUsername,
+			*result.DBInstances[0].Endpoint.Address,
+			*result.DBInstances[0].Engine,
+			*result.DBInstances[0].EngineVersion,
+			*result.DBInstances[0].InstanceCreateTime,
+			*result.DBInstances[0].DBInstanceStatus,
+		)
+	}
 	return nil
 }
