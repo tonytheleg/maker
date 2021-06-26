@@ -41,7 +41,7 @@ var createClusterCmd = &cobra.Command{
 		case "aws":
 			subnets, _ := cmd.Flags().GetStringSlice("subnets")
 			if len(subnets) < 2 {
-				err := errors.New("Must provide two subnets to create cluster")
+				err := errors.New("Must provide two subnets to create cluster (-s)")
 				utils.HandleErr("Failed to initiate:", err)
 			}
 			defaultRegion, err := aws.LoadConfig()

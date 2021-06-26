@@ -114,7 +114,8 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 				fmt.Println("Cluster completed!")
 				fmt.Println("Current status:", status)
 				fmt.Println("Kubeconfig created at", utils.ConfigFolderPath+"/aws_kubeconfig")
-				fmt.Println("AWS CLI required to auth for kubectl")
+				fmt.Printf("To use the kubeconfig, be sure to run 'export KUBECONFIG=%s/do_kubeconfig'\n", utils.ConfigFolderPath)
+				fmt.Println("AWS CLI is required and must be installed to auth for kubectl")
 				break
 			}
 			fmt.Println("Waiting for cluster completion to create node group -- Current status:", status)
