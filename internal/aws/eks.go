@@ -75,7 +75,7 @@ func CreateEksClusterRole(sess *session.Session) (string, error) {
 }
 
 // CreateEksCluster creates an EKS cluster with provided specs
-func CreateEksCluster(sess *session.Session, name, arn string, subnets []string) error {
+func CreateEksCluster(sess *session.Session, name, arn, version string, subnets []string) error {
 	digest := md5.New()
 	digest.Write([]byte(name))
 	hash := digest.Sum(nil)
@@ -91,6 +91,7 @@ func CreateEksCluster(sess *session.Session, name, arn string, subnets []string)
 			},
 		},
 		RoleArn: aws.String(arn),
+		Version: &version,
 	}
 
 	_, err := svc.CreateCluster(input)

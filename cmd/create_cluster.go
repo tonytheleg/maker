@@ -55,7 +55,7 @@ var createClusterCmd = &cobra.Command{
 				arn, err = aws.CreateEksClusterRole(session)
 				utils.HandleErr("Failed to create EKS service linked role:", err)
 			}
-			err = aws.CreateEksCluster(session, name, arn, subnets)
+			err = aws.CreateEksCluster(session, name, arn, version, subnets)
 			utils.HandleErr("Failed to create EKS cluster:", err)
 
 			err = aws.CreateEksNodeGroup(session, name, arn, nodeSize, nodeCount, subnets)

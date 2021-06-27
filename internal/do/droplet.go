@@ -18,7 +18,6 @@ func CreateDoClient(patToken, defaultRegion string) *godo.Client {
 func CreateDoDroplet(client *godo.Client, name string, region string, sizeSlug string, imageSlug string) error {
 	ctx := context.TODO()
 	dropletKey := &godo.DropletCreateSSHKey{}
-	// add check for SSH Keys
 	opt := &godo.ListOptions{
 		Page:    1,
 		PerPage: 200,

@@ -27,11 +27,29 @@ func CreateAwsSession(credentialsFile, defaultRegion string) (*session.Session, 
 func CreateEc2Instance(sess *session.Session, name, region, instanceType, ami string) error {
 	// Create the instance
 	svc := ec2.New(sess)
+	var sshkeyID *string
+	keys, err := svc.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
+	if err != nil {
+		return errors.Errorf("Failed to check keypairs:", err)
+	}
+	if len(keys.KeyPairs) < 1 {
+		fmt.Println("To access an EC2 instance, an SSH Key is required")
+		fmt.Println("Create an SSH Key and Upload and try again")
+		fmt.Println("https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#prepare-key-pair")
+		return errors.Errorf("failed to create instance: SSH Key required and none are avaiable")
+	}
+	if len(keys.KeyPairs) > 1 {
+		// do something
+	} else {
+		fmt.Printf("Using SSH Key %v\n", aws.String(*keys.KeyPairs[0].KeyName))
+		sshkeyID = keys.KeyPairs[0].KeyName
+	}
 	result, err := svc.RunInstances(&ec2.RunInstancesInput{
 		ImageId:      aws.String(ami),
 		InstanceType: aws.String(instanceType),
 		MinCount:     aws.Int64(1),
 		MaxCount:     aws.Int64(1),
+		KeyName:      sshkeyID,
 	})
 
 	if err != nil {
