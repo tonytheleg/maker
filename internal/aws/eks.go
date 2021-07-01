@@ -113,10 +113,7 @@ func CreateEksNodeGroup(sess *session.Session, name, arn, nodeSize string, nodeC
 			}
 			if status == "ACTIVE" {
 				fmt.Println("Cluster completed!")
-				fmt.Println("Current status:", status)
-				fmt.Println("Kubeconfig created at", utils.ConfigFolderPath+"/aws_kubeconfig")
-				fmt.Printf("To use the kubeconfig, be sure to run 'export KUBECONFIG=%s/do_kubeconfig'\n", utils.ConfigFolderPath)
-				fmt.Println("AWS CLI is required and must be installed to auth for kubectl")
+				fmt.Printf("Current status: %s\n\n", status)
 				break
 			}
 			fmt.Println("Waiting for cluster completion to create node group -- Current status:", status)
@@ -185,6 +182,9 @@ users:
 	if err != nil {
 		return errors.Errorf("Failed to write kubeconfig:", err)
 	}
+	fmt.Println("Kubeconfig created at", utils.ConfigFolderPath+"/aws_kubeconfig")
+	fmt.Printf("To use the kubeconfig, be sure to run 'export KUBECONFIG=%s/aws_kubeconfig'\n", utils.ConfigFolderPath)
+	fmt.Println("AWS CLI is required and must be installed to auth for kubectl")
 	return nil
 }
 
@@ -264,7 +264,7 @@ func PrintEksClusterStatus(sess *session.Session, clusterName, nodeGroupName str
 		return errors.Errorf("Failed to fetch node group status:", err)
 	}
 	fmt.Printf("\nNodegroup Info\n----------\n")
-	fmt.Printf("Name: %s\nARN: %s\nAMI: %s\nInstance Type: %s\nCreated At: %s\nStatus: %s\n",
+	fmt.Printf("Name: %s\nARN: %s\nAMI: %s\nInstance Type: %s\nCreated At: %s\nStatus: %s\n\n",
 		*nodesResult.Nodegroup.NodegroupName,
 		*nodesResult.Nodegroup.NodegroupArn,
 		*nodesResult.Nodegroup.AmiType,

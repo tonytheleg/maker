@@ -43,7 +43,14 @@ var statusClusterCmd = &cobra.Command{
 			utils.HandleErr("Failed to setup AWS Session:", err)
 
 			err = aws.PrintEksClusterStatus(session, name, name+"-nodegroup")
-			utils.HandleErr("Failed to create EKS cluster:", err)
+			utils.HandleErr("Failed to get EKS cluster status:", err)
+			if getConfig {
+				result, err := aws.GetCluster(session, name)
+				utils.HandleErr("Failed to grab cluster info:", err)
+
+				err = aws.CreateKubeconfig(*result.Cluster.Endpoint, *result.Cluster.CertificateAuthority.Data, name)
+				utils.HandleErr("Failed to grab cluster info:", err)
+			}
 		case "gcp":
 			keyfile, defaultZone, gcpProject, err := gcp.LoadConfig()
 			utils.HandleErr("Failed to load config:", err)
