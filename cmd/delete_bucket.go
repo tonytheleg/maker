@@ -56,7 +56,7 @@ var deleteBucketCmd = &cobra.Command{
 			utils.HandleErr("Failed to delete objects in bucket", err)
 
 			err = gcp.DeleteStorageBucket(client, name, gcpProject)
-			utils.HandleErr("Failed to create Storage bucket:", err)
+			utils.HandleErr("Failed to delete Storage bucket:", err)
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

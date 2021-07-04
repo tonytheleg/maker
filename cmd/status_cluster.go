@@ -60,6 +60,13 @@ var statusClusterCmd = &cobra.Command{
 
 			gcp.PrintGkeClusterStatus(client, name, gcpProject, defaultZone)
 			utils.HandleErr("Failed to fetch GCE instance:", err)
+			if getConfig {
+				accessToken, err := gcp.FetchAccessToken(keyfile)
+				utils.HandleErr("Failed to fetch token", err)
+
+				err = gcp.CreateKubeconfig(client, name, gcpProject, defaultZone, accessToken)
+				utils.HandleErr("Failed to create kubeconfig", err)
+			}
 		default:
 			fmt.Printf("Unknown Provder -- %s", provider)
 		}

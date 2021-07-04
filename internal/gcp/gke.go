@@ -109,6 +109,7 @@ users:
 		return errors.Errorf("Failed to write kubeconfig:", err)
 	}
 	fmt.Println("Kubeconfig created at", utils.ConfigFolderPath+"/gke_kubeconfig")
+	fmt.Printf("To use the kubeconfig, be sure to run 'export KUBECONFIG=%s/gke_kubeconfig'\n", utils.ConfigFolderPath)
 	return nil
 }
 
@@ -130,7 +131,7 @@ func GetCluster(client *container.ClusterManagerClient, name, project, zone stri
 func PrintGkeClusterStatus(client *container.ClusterManagerClient, name, project, zone string) {
 	cluster, _ := GetCluster(client, name, project, zone)
 	fmt.Printf(
-		"Name: %s\nVersion: %s\nEndpoint: %s\nNetwork: %s\nServices CIDR: %s\nZone: %s\n\nNode Pool Name: %s\nNode Count: %d\nMachine Type: %s\nImage: %s\nStatus: %s\nCreation Date: %s\n",
+		"Name: %s\nVersion: %s\nEndpoint: %s\nNetwork: %s\nServices CIDR: %s\nZone: %s\n\nNode Pool Name: %s\nNode Count: %d\nMachine Type: %s\nImage: %s\nStatus: %s\nCreation Date: %s\n\n",
 		cluster.Name,
 		cluster.CurrentNodeVersion,
 		cluster.Endpoint,

@@ -27,7 +27,7 @@ func CreateStorageClient(keyfile string) (*storage.Client, error) {
 func CreateStorageBucket(client *storage.Client, name, project string) error {
 	ctx := context.Background()
 	bkt := client.Bucket(name)
-	fmt.Println(name, project)
+
 	err := bkt.Create(ctx, project, nil)
 	if err != nil {
 		return errors.Errorf("Failed to create bucket: ", err)
@@ -71,18 +71,18 @@ func GetStorageBucketInfo(client *storage.Client, name string) error {
 }
 
 // DeleteStorageObjects empties a bucket for deletion
-func DeleteStorageObjects(client *storage.Client, name, project string) error {
+func DeleteStorageBucket(client *storage.Client, name, project string) error {
 	ctx := context.Background()
 	err := client.Bucket(name).Delete(ctx)
 	if err != nil {
-		return errors.Errorf("Failed to remove objects in bucket:", err)
+		return errors.Errorf("Failed to delete bucket:", err)
 	}
 	fmt.Println("Bucket", name, "deleted")
 	return nil
 }
 
 // DeleteStorageBucket delets a Storage bucket from GCP
-func DeleteStorageBucket(client *storage.Client, name, project string) error {
+func DeleteStorageObjects(client *storage.Client, name, project string) error {
 	// confirm that deleteing space will delete all files first
 	var confirmation string
 	fmt.Printf("\nWARNING: To delete a Storage bucket, all objects in that bucket must be deleted!\n")
@@ -100,15 +100,15 @@ func DeleteStorageBucket(client *storage.Client, name, project string) error {
 	for {
 		objAttrs, err := item.Next()
 		if err != nil && err != iterator.Done {
-			// TODO: Handle error.
+			return errors.Errorf("Failed to fetch files from bucket")
 		}
 		if err == iterator.Done {
 			break
 		}
 		if err := bucket.Object(objAttrs.Name).Delete(ctx); err != nil {
-			// TODO: Handle error.
+			return errors.Errorf("Failed to delete files from bucket")
 		}
 	}
-	fmt.Println("deleted all object items in the bucket specified.")
+	fmt.Println("Deleted all object items in the bucket specified.")
 	return nil
 }

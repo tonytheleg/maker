@@ -97,5 +97,5 @@ func init() {
 	createClusterCmd.Flags().IntP("node-count", "c", 2, "sets the node pool size")
 	createClusterCmd.Flags().StringP("version", "v", "", "sets the Kubernetes/Vendor version")
 	createClusterCmd.MarkFlagRequired("version")
-	createClusterCmd.Flags().StringSliceP("subnets", "b", nil, "comma separated list of 2 subnets to deploy to")
+	createClusterCmd.Flags().StringSliceP("subnets", "b", nil, "comma separated list of 2 subnets to deploy to (AWS Requuired Only)")
 }
